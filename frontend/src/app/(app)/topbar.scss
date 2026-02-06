@@ -1,0 +1,115 @@
+.topbar {
+  height: 70px;
+  min-height: 70px;
+  max-height: 70px;
+  background: white;
+  border-bottom: 1px solid #e5e9f2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  .page-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: 14px;
+
+    .system-status {
+      .status-indicator {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        background: #f0fdf4;
+        border-radius: 6px;
+
+        svg {
+          color: #10b981;
+          animation: pulse 2s ease-in-out infinite;
+        }
+
+        .status-text {
+          font-weight: 500;
+          color: #059669;
+          font-size: 13px;
+        }
+      }
+    }
+
+    .time-display {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: #f8fafc;
+      border-radius: 6px;
+      color: #475569;
+
+      svg {
+        color: #64748b;
+      }
+
+      span {
+        font-weight: 500;
+        font-size: 13px;
+        font-variant-numeric: tabular-nums;
+        min-width: 60px;
+      }
+    }
+
+    .role-display {
+      .role-badge {
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+    }
+
+    .user-display {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: #f8fafc;
+      border-radius: 6px;
+      color: #475569;
+
+      svg {
+        color: #64748b;
+      }
+
+      span {
+        font-weight: 500;
+        font-size: 13px;
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}

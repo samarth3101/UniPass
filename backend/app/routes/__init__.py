@@ -1,0 +1,9 @@
+from .health import router as health_router
+from .event import router as event_router
+from .event import router as events_router
+from .registration import router as registration_router
+from .ticket_qr import router as ticket_router
+from .scan import router as scan_router
+from .attendance_dashboard import router as attendance_router
+from .export import router as export_router
+from .public_registration import router as public_registration_router

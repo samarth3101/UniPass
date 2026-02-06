@@ -1,0 +1,259 @@
+.monitor-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  position: relative;
+  overflow: hidden;
+
+  // Animated background gradient
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+    background-size: 50px 50px;
+    animation: gridMove 20s linear infinite;
+  }
+
+  @keyframes gridMove {
+    0% {
+      transform: translate(0, 0);
+    }
+    100% {
+      transform: translate(50px, 50px);
+    }
+  }
+}
+
+.monitor-container {
+  position: relative;
+  z-index: 1;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 32px;
+  padding: 60px;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.3);
+  max-width: 800px;
+  width: 100%;
+  backdrop-filter: blur(20px);
+  text-align: center;
+}
+
+.connection-status {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+
+  &.connected {
+    background: #10b981;
+    color: white;
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      background: white;
+      border-radius: 50%;
+      animation: livePulse 2s ease-in-out infinite;
+    }
+  }
+
+  &.disconnected {
+    background: #ef4444;
+    color: white;
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      background: white;
+      border-radius: 50%;
+    }
+  }
+}
+
+@keyframes livePulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.3);
+  }
+}
+
+.event-title {
+  margin-bottom: 50px;
+
+  h1 {
+    font-size: 48px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+  }
+}
+
+.scan-counter {
+  margin: 60px 0;
+  transition: transform 0.3s ease;
+
+  &.pulse {
+    animation: counterPulse 0.5s ease;
+  }
+
+  .counter-label {
+    font-size: 18px;
+    font-weight: 700;
+    color: #64748b;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+  }
+
+  .counter-value {
+    font-size: 120px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    text-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+  }
+}
+
+@keyframes counterPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.last-scan {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 2px solid #3b82f6;
+  border-radius: 20px;
+  padding: 32px;
+  margin-top: 40px;
+  animation: slideIn 0.5s ease;
+
+  .last-scan-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: #3b82f6;
+    letter-spacing: 1.5px;
+    margin-bottom: 16px;
+  }
+
+  .last-scan-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .scan-prn {
+    font-size: 32px;
+    font-weight: 800;
+    color: #1e293b;
+    font-family: 'Courier New', monospace;
+  }
+
+  .scan-name {
+    font-size: 24px;
+    font-weight: 600;
+    color: #475569;
+  }
+
+  .scan-time {
+    font-size: 18px;
+    color: #64748b;
+    font-family: 'Courier New', monospace;
+    margin-top: 8px;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.no-scans {
+  margin-top: 60px;
+  padding: 40px;
+  
+  .no-scans-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .no-scans-text {
+    font-size: 20px;
+    color: #64748b;
+    font-weight: 500;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .monitor-page {
+    padding: 20px;
+  }
+
+  .monitor-container {
+    padding: 40px 30px;
+  }
+
+  .event-title h1 {
+    font-size: 32px;
+  }
+
+  .scan-counter .counter-value {
+    font-size: 80px;
+  }
+
+  .last-scan .scan-prn {
+    font-size: 24px;
+  }
+
+  .last-scan .scan-name {
+    font-size: 18px;
+  }
+}
