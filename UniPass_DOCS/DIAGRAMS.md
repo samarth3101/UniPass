@@ -3,7 +3,7 @@
 
 **Document Purpose:** Comprehensive visual documentation for "A Secure JWT-Based Digital Ticketing and Time-Bound QR Attendance Architecture with AI-Ready Behavioral Analytics for Educational Institutions"
 
-**Date:** February 5, 2026  
+**Date:** February 6, 2026 (Updated)  
 **Author:** Samarth Patil
 
 ---
@@ -34,8 +34,8 @@
 ```mermaid
 graph TB
     subgraph "CLIENT LAYER"
-        WEB[Web Application<br/>Next.js 16.1]
-        MOBILE[Mobile Web<br/>Responsive]
+        WEB[Web Application<br/>Next.js 16.1 React 19]
+        MOBILE[Mobile Web<br/>Responsive PWA]
         SCANNER[QR Scanner<br/>Camera API]
     end
 
@@ -338,8 +338,8 @@ erDiagram
         int id PK "Auto-increment"
         varchar email UK "Unique, indexed"
         varchar password_hash "bcrypt hashed"
-        varchar name "Full name"
-        enum role "admin|scanner|viewer"
+        varchar full_name "Full name (nullable)"
+        enum role "ADMIN|ORGANIZER|SCANNER"
         timestamp created_at "UTC timestamp"
         jsonb preferences "User settings (AI-ready)"
     }
@@ -862,7 +862,7 @@ def admin_override_attendance(
     """
     
     # Require admin authentication
-    if admin_user.role != "admin":
+    if admin_user.role != "ADMIN":
         raise PermissionError("Only admins can override")
     
     # Mandatory reason field
@@ -903,8 +903,8 @@ def admin_override_attendance(
 graph LR
     subgraph "Users"
         U1[Admin User]
-        U2[Scanner User]
-        U3[Viewer User]
+        U2[Organizer User]
+        U3[Scanner User]
     end
     
     subgraph "Authentication Layer"
@@ -932,7 +932,7 @@ graph LR
     end
     
     subgraph "Admin Operations"
-        CHECK_ROLE --> |role=admin| ADMIN_OPS{Operation Type?}
+        CHECK_ROLE --> |role=ADMIN| ADMIN_OPS{Operation Type?}
         
         ADMIN_OPS --> |Create Event| CREATE_EVT[POST /events]
         ADMIN_OPS --> |Delete Event| DELETE_EVT[DELETE /events/{id}]
@@ -949,35 +949,40 @@ graph LR
         AUDIT --> SUCCESS_ADMIN
     end
     
-    subgraph "Scanner Operations"
-        CHECK_ROLE --> |role=scanner| SCAN_OPS{Operation Type?}
+    subgraph "Organizer Operations"
+        CHECK_ROLE --> |role=ORGANIZER| ORG_OPS{Operation Type?}
         
-        SCAN_OPS --> |Scan QR| SCAN[POST /scan]
-        SCAN_OPS --> |View Event| VIEW_EVT[GET /events/{id}]
-        SCAN_OPS --> |Try Delete| TRY_DELETE[DELETE /events/{id}]
+        ORG_OPS --> |Create Event| ORG_CREATE[POST /events]
+        ORG_OPS --> |Edit Own Event| ORG_EDIT[PUT /events/{id}]
+        ORG_OPS --> |View Dashboard| ORG_DASH[GET /attendance]
+        ORG_OPS --> |Export Reports| ORG_EXPORT[CSV/PDF Reports]
+        ORG_OPS --> |Try Admin Action| TRY_ADMIN[Override/Manage Users]
         
-        SCAN --> SUCCESS_SCAN[200 OK + Audit Log]
-        VIEW_EVT --> SUCCESS_SCAN
-        TRY_DELETE --> FORBIDDEN[403 Forbidden<br/>Insufficient permissions]
+        ORG_CREATE --> SUCCESS_ORG[200 OK + Audit Log]
+        ORG_EDIT --> SUCCESS_ORG
+        ORG_DASH --> SUCCESS_ORG
+        ORG_EXPORT --> SUCCESS_ORG
+        TRY_ADMIN --> FORBIDDEN_ORG[403 Forbidden<br/>Insufficient permissions]
     end
     
-    subgraph "Viewer Operations"
-        CHECK_ROLE --> |role=viewer| VIEW_OPS{Operation Type?}
+    subgraph "Scanner Operations"
+        CHECK_ROLE --> |role=SCANNER| SCAN_OPS{Operation Type?}
         
-        VIEW_OPS --> |View Events| VIEW_ALL[GET /events]
-        VIEW_OPS --> |View Stats| VIEW_STATS[GET /attendance/stats]
-        VIEW_OPS --> |Try Scan| TRY_SCAN[POST /scan]
+        SCAN_OPS --> |Scan QR| SCAN[POST /scan]
+        SCAN_OPS --> |Try Dashboard| TRY_DASH[GET /attendance]
+        SCAN_OPS --> |Try Create| TRY_CREATE[POST /events]
         
-        VIEW_ALL --> SUCCESS_VIEW[200 OK]
-        VIEW_STATS --> SUCCESS_VIEW
-        TRY_SCAN --> FORBIDDEN2[403 Forbidden<br/>Viewers cannot scan]
+        SCAN --> SUCCESS_SCAN[200 OK + Audit Log]
+        TRY_DASH --> FORBIDDEN_SCAN[403 Forbidden<br/>Scanners cannot view dashboard]
+        TRY_CREATE --> FORBIDDEN_SCAN
     end
     
     subgraph "Audit Logging"
         SUCCESS_ADMIN --> LOG[INSERT INTO audit_logs]
+        SUCCESS_ORG --> LOG
         SUCCESS_SCAN --> LOG
-        FORBIDDEN --> LOG
-        FORBIDDEN2 --> LOG
+        FORBIDDEN_ORG --> LOG
+        FORBIDDEN_SCAN --> LOG
         
         LOG --> DB[(Database)]
     end
@@ -989,33 +994,45 @@ graph LR
 
 **Permission Matrix:**
 
-| Operation | Admin | Scanner | Viewer |
-|-----------|-------|---------|--------|
+| Operation | ADMIN | ORGANIZER | SCANNER |
+|-----------|-------|-----------|---------|
 | **Events** | | | |
-| Create Event | ✅ | ❌ | ❌ |
-| Edit Event | ✅ | ❌ | ❌ |
-| Delete Event | ✅ | ❌ | ❌ |
-| View Events | ✅ | ✅ | ✅ |
+| Create Event | ✅ | ✅ | ❌ |
+| Edit Event | ✅ | ✅ (own only) | ❌ |
+| Delete Event | ✅ | ✅ (own only) | ❌ |
+| View Events | ✅ (all) | ✅ (own only) | ❌ |
 | **Tickets** | | | |
-| Generate Ticket | ✅ | ❌ | ❌ |
-| View Tickets | ✅ | ✅ (own scans) | ✅ |
+| Generate Ticket | ✅ | ✅ | ❌ |
+| View Tickets | ✅ | ✅ | ❌ |
+| Delete Ticket | ✅ | ✅ | ❌ |
 | **Attendance** | | | |
-| Scan QR Code | ✅ | ✅ | ❌ |
+| Scan QR Code | ✅ | ✅ | ✅ |
 | Override Scan | ✅ | ❌ | ❌ |
-| View Attendance | ✅ | ✅ (own scans) | ✅ |
+| View Attendance | ✅ | ✅ | ❌ |
+| Mark Manual Attendance | ✅ | ❌ | ❌ |
 | **Users** | | | |
 | Create User | ✅ | ❌ | ❌ |
 | Change Role | ✅ | ❌ | ❌ |
 | Delete User | ✅ | ❌ | ❌ |
+| Manage Organizers | ✅ | ❌ | ❌ |
 | **Export** | | | |
-| Export PDF | ✅ | ❌ | ❌ |
-| Export CSV | ✅ | ❌ | ❌ |
-| Send Email Report | ✅ | ❌ | ❌ |
+| Export PDF | ✅ | ✅ | ❌ |
+| Export CSV | ✅ | ✅ | ❌ |
+| Send Email Report | ✅ | ✅ | ❌ |
+| **Dashboard** | | | |
+| View Dashboard | ✅ | ✅ | ❌ |
+| Real-Time Analytics | ✅ | ✅ | ❌ |
 | **Audit** | | | |
 | View Audit Logs | ✅ | ❌ | ❌ |
 | **Students** | | | |
 | Import CSV | ✅ | ❌ | ❌ |
-| View Students | ✅ | ✅ | ✅ |
+| View Students | ✅ | ✅ | ❌ |
+| View Student Analytics | ✅ | ✅ | ❌ |
+
+**Role Hierarchy:**
+- **ADMIN**: Full system access - manages all events, users, and system settings
+- **ORGANIZER**: Can create/manage their own events, view analytics, export reports
+- **SCANNER**: Can only scan QR codes - minimal permissions for gate volunteers
 
 ---
 
@@ -2292,8 +2309,8 @@ graph TB
 
 ## Document Metadata
 
-**Last Updated:** February 5, 2026  
-**Version:** 2.0 (Updated with Phases 2-3 and Infrastructure Improvements)  
+**Last Updated:** February 6, 2026  
+**Version:** 2.1 (Updated with latest system changes and full_name field)  
 **Author:** Samarth Patil  
 **Document Purpose:** Comprehensive visual documentation for research paper / technical presentation  
 **Format:** Mermaid diagrams (VS Code, GitHub, exportable to PNG/SVG)  
@@ -2317,5 +2334,6 @@ graph TB
 ---
 
 **End of Diagrams Document**  
-**Status:** Complete and Up-to-Date with All System Features  
+**Status:** Complete and Up-to-Date with All System Features (Feb 6, 2026)  
+**Aligned With:** UNIPASS_SYSTEM_OVERVIEW.md v2.0  
 **Next Update:** After Phase 4 (AI Implementation) or Production Deployment
