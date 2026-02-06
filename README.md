@@ -1,4 +1,4 @@
-# 🎓 UniPass - AI-Powered Event Attendance Management System
+#  UniPass - AI-Powered Event Attendance Management System
 
 <div align="center">
 
@@ -48,52 +48,52 @@ Universities and educational institutions face significant challenges in managin
 
 **UniPass** is an intelligent, secure, and scalable event management platform that revolutionizes how educational institutions handle event attendance. Built with modern technologies and enterprise-grade security, UniPass combines:
 
-✨ **JWT-Signed QR Tickets** - Each ticket is cryptographically signed and time-bound  
-📊 **Real-Time Analytics** - Live attendance monitoring via Server-Sent Events (SSE)  
-🔐 **Role-Based Access Control** - Granular permissions for admins, organizers, and scanners  
-📧 **Automated Email Ticketing** - Instant QR code delivery to registered students  
-📈 **AI-Ready Architecture** - Predictive analytics and behavioral insights (in development)  
-🔍 **Complete Audit Trail** - Every action logged for compliance and accountability
+ **JWT-Signed QR Tickets** - Each ticket is cryptographically signed and time-bound  
+ **Real-Time Analytics** - Live attendance monitoring via Server-Sent Events (SSE)  
+ **Role-Based Access Control** - Granular permissions for admins, organizers, and scanners  
+ **Automated Email Ticketing** - Instant QR code delivery to registered students  
+ **AI-Ready Architecture** - Predictive analytics and behavioral insights (in development)  
+ **Complete Audit Trail** - Every action logged for compliance and accountability
 
 ---
 
 ## ✨ Key Features
 
-### 🎫 **Smart Ticketing System**
+###  **Smart Ticketing System**
 - **JWT-Signed QR Codes**: Each ticket contains encrypted event data (event_id, student_id, timestamp)
 - **Time-Bound Validation**: QR codes only work during event time window
 - **One-Time Scan Protection**: Prevents ticket reuse and fraud
 - **Email Delivery**: Automated ticket generation and email dispatch
 
-### 📱 **Multi-Role Dashboard**
+###  **Multi-Role Dashboard**
 
-#### 👨‍💼 Admin Dashboard
+####  Admin Dashboard
 - Create and manage events with full CRUD operations
 - Assign organizers to events
 - View system-wide analytics and reports
 - Manage user roles and permissions
 - Export attendance data (CSV, Excel, PDF)
 
-#### 🎯 Organizer Dashboard
+####  Organizer Dashboard
 - Monitor assigned events in real-time
 - View live attendance count with SSE streaming
 - Access detailed student lists with attendance status
 - Generate quick reports and certificates
 
-#### 📷 Scanner Interface
+####  Scanner Interface
 - Camera-based QR code scanning
 - Instant validation feedback (success/error states)
 - Works on any device with camera
 - Offline-capable validation (coming soon)
 
-### 📊 **Advanced Analytics**
+###  **Advanced Analytics**
 - **Real-Time Monitoring**: Live attendance updates using Server-Sent Events
 - **Attendance Dashboard**: Compare actual vs expected attendance across events
 - **Student Insights**: Individual participation history and patterns
 - **Visual Reports**: Charts and graphs for quick decision-making
 - **Export Options**: Multiple formats for external analysis
 
-### 🔒 **Enterprise Security**
+###  **Enterprise Security**
 - **JWT Authentication**: Stateless, scalable authentication
 - **Password Hashing**: Bcrypt with configurable rounds
 - **RBAC Implementation**: 4 roles (superadmin, admin, organizer, scanner)
@@ -101,7 +101,7 @@ Universities and educational institutions face significant challenges in managin
 - **CORS Protection**: Environment-based origin whitelisting
 - **SQL Injection Prevention**: Parameterized queries via SQLAlchemy ORM
 
-### 🤖 **AI/ML Integration (In Development)**
+###  **AI/ML Integration (In Development)**
 - Attendance prediction models
 - Anomaly detection (duplicate scans, unusual patterns)
 - Student engagement scoring
@@ -379,7 +379,7 @@ UniPass/
 
 ---
 
-## 🔐 Security Features
+##  Security Features
 
 ### **Authentication & Authorization**
 - ✅ JWT-based stateless authentication
@@ -410,53 +410,48 @@ UniPass/
 
 ---
 
-## 🗺 Future Roadmap
+##  Future Roadmap
 
-### **Phase 1: AI/ML Integration** (Q2 2026)
+### **AI/ML Integration**
 - [ ] Attendance prediction models (Random Forest, XGBoost)
 - [ ] Anomaly detection (isolation forests)
 - [ ] Student engagement scoring
 - [ ] Event success prediction
 
-### **Phase 2: Mobile Apps** (Q3 2026)
-- [ ] React Native mobile app (iOS + Android)
-- [ ] Offline QR scanning capability
-- [ ] Push notifications for events
-- [ ] Mobile-first organizer dashboard
-
-### **Phase 3: Advanced Features** (Q4 2026)
-- [ ] Biometric integration (face recognition)
+### **Advanced Features**
 - [ ] Blockchain-based certificates
 - [ ] Multi-tenancy (multiple universities)
 - [ ] Advanced analytics dashboard
 - [ ] Integration with university ERP systems
 
-### **Phase 4: Scale & Performance** (2027)
-- [ ] Microservices architecture
-- [ ] Redis caching layer
-- [ ] Load balancing (Nginx/Traefik)
-- [ ] ElasticSearch for logs
-- [ ] Kubernetes deployment
 
 ---
 
-## 👥 Team
+## 👥 Team Leader
 
 **Developed by**: Samarth Patil  
-**Institution**: [Your University Name]  
-**Contact**: [Your Email]  
-**LinkedIn**: [Your LinkedIn]  
-**GitHub**: [Your GitHub Profile]
-
+**Institution**: PCET's Pimpri Chinchwad University, Pune
+**Contact**: samarth.patil3101@gmail.com
+**LinkedIn**: https://www.linkedin.com/in/samarth-patil-3101spp/
+**GitHub**: https://github.com/samarth3101
+**Portfolio**: https://samarthpatil.netlify.app/
 ---
 
 ## 📄 License
 
-This project is developed for educational purposes as part of a hackathon.
+This project is developed for educational purposes as part of a hackathon, research and development. 
+
+The system design, architecture, workflows, and research components associated with this project are the intellectual property of the author and are protected under applicable copyright laws.
+
+Unauthorized use, reproduction, modification, or redistribution of the architecture, design documents, or core conceptual workflows—in whole or in part—without explicit written permission from the author may constitute a violation of intellectual property rights.
+
+Source code is shared strictly for learning and evaluation purposes.
+
+For permissions, collaborations, or authorized use, please contact the author.
 
 ---
 
-## 🙏 Acknowledgments
+##  Acknowledgments
 
 - FastAPI documentation and community
 - Next.js team for excellent developer experience
@@ -469,6 +464,6 @@ This project is developed for educational purposes as part of a hackathon.
 
 **⭐ Star this repo if you find it useful! ⭐**
 
-Made with ❤️ for better education management
+Made with ❤️ by Samarth Patil
 
 </div>
