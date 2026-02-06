@@ -49,6 +49,9 @@ export default function EventModal({ event, onClose }: Props) {
   const [teacherEmail, setTeacherEmail] = useState("");
   const [teacherName, setTeacherName] = useState("Professor");
   const [sendingEmail, setSendingEmail] = useState(false);
+  const [certificateStats, setCertificateStats] = useState<any>(null);
+  const [pushingCertificates, setPushingCertificates] = useState(false);
+  const [showCertificateInfo, setShowCertificateInfo] = useState(false);
 
   async function handleUpdate() {
     setLoading(true);
@@ -171,6 +174,52 @@ export default function EventModal({ event, onClose }: Props) {
     }
   }
 
+  async function loadCertificateStats() {
+    try {
+      const stats = await api.get(`/certificates/event/${event.id}/stats`);
+      setCertificateStats(stats);
+      setShowCertificateInfo(true);
+    } catch (error: any) {
+      console.error("Error loading certificate stats:", error);
+      toast.error("Failed to load certificate statistics");
+    }
+  }
+
+  async function pushCertificates() {
+    if (!certificateStats) {
+      await loadCertificateStats();
+      return;
+    }
+
+    if (certificateStats.pending_certificates === 0) {
+      toast.info("No new certificates to send. All eligible students have already received certificates.");
+      return;
+    }
+
+    if (!confirm(`Send certificates to ${certificateStats.pending_certificates} student(s)?`)) {
+      return;
+    }
+
+    setPushingCertificates(true);
+    try {
+      const result = await api.post(`/certificates/event/${event.id}/push`);
+      
+      if (result.success) {
+        const message = `Successfully issued ${result.certificates_issued} certificate(s). ` +
+                       `Emails sent: ${result.emails_sent}, Failed: ${result.emails_failed}`;
+        toast.success(message);
+        
+        // Reload stats
+        await loadCertificateStats();
+      }
+    } catch (error: any) {
+      console.error("Error pushing certificates:", error);
+      toast.error(error.response?.data?.detail || "Failed to push certificates");
+    } finally {
+      setPushingCertificates(false);
+    }
+  }
+
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal large" onClick={(e) => e.stopPropagation()}>
@@ -226,7 +275,68 @@ export default function EventModal({ event, onClose }: Props) {
             </svg>
             Email Teacher
           </button>
+
+          <button type="button" onClick={pushCertificates} className="control-btn certificate-btn" disabled={pushingCertificates}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            {pushingCertificates ? 'Pushing...' : 'Push Certificates'}
+          </button>
         </div>
+
+        {showCertificateInfo && certificateStats && (
+          <div style={{
+            margin: '20px 0',
+            padding: '20px',
+            background: '#fef3c7',
+            border: '2px solid #f59e0b',
+            borderRadius: '12px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h4 style={{ margin: 0, color: '#92400e' }}>Certificate Status</h4>
+              <button 
+                onClick={() => setShowCertificateInfo(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#78350f',
+                  cursor: 'pointer',
+                  fontSize: '20px',
+                  lineHeight: '1',
+                  padding: '0 4px'
+                }}
+              >
+                ×
+              </button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px' }}>
+              <div style={{ background: 'white', padding: '12px', borderRadius: '8px' }}>
+                <div style={{ color: '#78350f', fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>Total Registered</div>
+                <div style={{ color: '#92400e', fontSize: '24px', fontWeight: 700 }}>{certificateStats.total_registered}</div>
+              </div>
+              <div style={{ background: 'white', padding: '12px', borderRadius: '8px' }}>
+                <div style={{ color: '#78350f', fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>Attended</div>
+                <div style={{ color: '#92400e', fontSize: '24px', fontWeight: 700 }}>{certificateStats.total_attended}</div>
+              </div>
+              <div style={{ background: 'white', padding: '12px', borderRadius: '8px' }}>
+                <div style={{ color: '#78350f', fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>Certificates Issued</div>
+                <div style={{ color: '#92400e', fontSize: '24px', fontWeight: 700 }}>{certificateStats.total_certificates_issued}</div>
+              </div>
+              <div style={{ background: certificateStats.pending_certificates > 0 ? '#dcfce7' : 'white', padding: '12px', borderRadius: '8px' }}>
+                <div style={{ color: '#78350f', fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>Pending</div>
+                <div style={{ color: certificateStats.pending_certificates > 0 ? '#16a34a' : '#92400e', fontSize: '24px', fontWeight: 700 }}>{certificateStats.pending_certificates}</div>
+              </div>
+            </div>
+            {certificateStats.pending_certificates > 0 && (
+              <div style={{ marginTop: '12px', padding: '12px', background: '#dcfce7', borderRadius: '8px' }}>
+                <p style={{ margin: 0, color: '#166534', fontSize: '13px' }}>
+                  🎓 {certificateStats.pending_certificates} student(s) are eligible for certificates. Click "Push Certificates" to send them.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
 
         {showEmailForm && (
           <div style={{

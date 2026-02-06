@@ -527,3 +527,159 @@ def send_teacher_email(
     except Exception as e:
         print(f"❌ Failed to send teacher report to {to_email}: {str(e)}")
         return False
+
+
+def create_certificate_email_html(
+    student_name: str,
+    event_title: str,
+    event_location: str,
+    event_date: str,
+    certificate_id: str
+) -> str:
+    """
+    Create beautiful HTML email template for event certificate
+    """
+    html = f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Certificate of Participation - {event_title}</title>
+    </head>
+    <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh;">
+        <div style="max-width: 700px; margin: 40px auto; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);">
+            
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 40px 30px; text-align: center;">
+                <div style="display: inline-block; background: white; padding: 12px 24px; border-radius: 50px; margin-bottom: 20px;">
+                    <span style="color: #4f46e5; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">🎓 CERTIFICATE</span>
+                </div>
+                <h1 style="margin: 0; color: white; font-size: 32px; font-weight: 800; line-height: 1.3;">Congratulations!</h1>
+                <p style="margin: 10px 0 0; color: rgba(255,255,255,0.9); font-size: 16px;">Certificate of Participation</p>
+            </div>
+            
+            <!-- Content -->
+            <div style="padding: 40px 30px;">
+                <p style="margin: 0 0 20px; color: #1e293b; font-size: 16px; line-height: 1.6;">
+                    Dear <strong>{student_name}</strong>,
+                </p>
+                <p style="margin: 0 0 30px; color: #475569; font-size: 15px; line-height: 1.6;">
+                    We are pleased to inform you that you have successfully completed your participation in:
+                </p>
+                
+                <!-- Certificate Box -->
+                <div style="background: linear-gradient(135deg, #fef3c7 0%, #fce7f3 100%); border: 3px solid #f59e0b; border-radius: 16px; padding: 30px; margin: 30px 0; text-align: center; position: relative; box-shadow: 0 10px 30px rgba(245, 158, 11, 0.2);">
+                    <div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: white; padding: 8px 20px; border-radius: 20px; border: 2px solid #f59e0b;">
+                        <span style="color: #f59e0b; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Official Certificate</span>
+                    </div>
+                    
+                    <div style="margin-top: 20px;">
+                        <h2 style="margin: 0 0 20px; color: #92400e; font-size: 28px; font-weight: 800; line-height: 1.3;">{event_title}</h2>
+                        
+                        <div style="margin: 20px 0;">
+                            <div style="display: inline-block; margin: 8px 12px;">
+                                <span style="color: #78350f; font-size: 14px; font-weight: 600;">📍 Location: </span>
+                                <span style="color: #92400e; font-size: 14px; font-weight: 500;">{event_location}</span>
+                            </div>
+                            <div style="display: inline-block; margin: 8px 12px;">
+                                <span style="color: #78350f; font-size: 14px; font-weight: 600;">📅 Date: </span>
+                                <span style="color: #92400e; font-size: 14px; font-weight: 500;">{event_date}</span>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 25px; padding-top: 20px; border-top: 2px dashed #f59e0b;">
+                            <p style="margin: 0; color: #78350f; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Certificate ID</p>
+                            <p style="margin: 5px 0 0; color: #92400e; font-size: 16px; font-weight: 700; font-family: monospace;">{certificate_id}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Achievement Message -->
+                <div style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-left: 4px solid #10b981; padding: 20px; border-radius: 10px; margin-bottom: 30px;">
+                    <p style="margin: 0; color: #065f46; font-size: 15px; line-height: 1.6; font-weight: 500;">
+                        🌟 Thank you for your active participation! This certificate recognizes your attendance and engagement in the event.
+                    </p>
+                </div>
+                
+                <!-- Verification Info -->
+                <div style="background: #f8fafc; padding: 20px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
+                    <p style="margin: 0 0 12px; color: #1e293b; font-size: 14px; font-weight: 700;">📋 Certificate Details:</p>
+                    <ul style="margin: 0; padding-left: 20px; color: #475569; font-size: 14px; line-height: 1.8;">
+                        <li>This is an official certificate issued by UniPass Event Management</li>
+                        <li>Certificate ID can be used for verification purposes</li>
+                        <li>Keep this email for your records</li>
+                    </ul>
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <p style="margin: 0; color: #64748b; font-size: 14px; line-height: 1.6;">
+                        We appreciate your participation and hope to see you at future events!
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div style="background: #f8fafc; padding: 25px 30px; text-align: center; border-top: 1px solid #e2e8f0;">
+                <p style="margin: 0 0 8px; color: #1e293b; font-size: 15px; font-weight: 600;">UniPass - Smart Event Management</p>
+                <p style="margin: 0; color: #94a3b8; font-size: 12px;">This is an automated email. Please do not reply to this message.</p>
+                <p style="margin: 15px 0 0; color: #cbd5e1; font-size: 11px;">© 2026 UniPass. All rights reserved.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    return html
+
+
+def send_certificate_email(
+    to_email: str,
+    student_name: str,
+    event_title: str,
+    event_location: str,
+    event_date: str,
+    certificate_id: str
+) -> bool:
+    """
+    Send certificate email to student
+    Returns True if successful, False otherwise
+    """
+    # Check if SMTP is configured
+    if not settings.SMTP_USER or not settings.SMTP_PASSWORD:
+        print("Warning: SMTP not configured. Email sending skipped.")
+        print(f"Would send certificate to: {to_email}")
+        return False
+    
+    try:
+        # Create email
+        msg = MIMEMultipart('related')
+        msg['Subject'] = f"🎓 Certificate of Participation: {event_title}"
+        msg['From'] = f"{settings.EMAIL_FROM_NAME} <{settings.EMAIL_FROM}>"
+        msg['To'] = to_email
+        
+        # Create HTML body
+        html_body = create_certificate_email_html(
+            student_name=student_name,
+            event_title=event_title,
+            event_location=event_location,
+            event_date=event_date,
+            certificate_id=certificate_id
+        )
+        
+        # Attach HTML
+        html_part = MIMEText(html_body, 'html')
+        msg.attach(html_part)
+        
+        # Send email
+        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+            server.starttls()
+            server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+            server.send_message(msg)
+        
+        print(f"✅ Certificate email sent successfully to {to_email}")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Failed to send certificate email to {to_email}: {str(e)}")
+        return False
+

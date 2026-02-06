@@ -4,22 +4,24 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 32px;
+  padding: 20px;
 }
 
 .scan-container {
   width: 100%;
-  max-width: 600px;
+  max-width: 550px;
   background: white;
-  padding: 40px;
+  padding: 28px;
   border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .scan-container h1 {
   text-align: center;
-  font-size: 32px;
-  margin-bottom: 8px;
+  font-size: 28px;
+  margin-bottom: 6px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -29,24 +31,24 @@
 .scan-container .event-id {
   text-align: center;
   color: #666;
-  font-size: 14px;
-  margin-bottom: 24px;
+  font-size: 13px;
+  margin-bottom: 20px;
 }
 
 .scan-tabs {
   display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
+  gap: 6px;
+  margin-bottom: 20px;
   border-bottom: 2px solid #e0e0e0;
 }
 
 .tab {
   flex: 1;
-  padding: 12px 16px;
+  padding: 10px 12px;
   background: none;
   border: none;
   border-bottom: 3px solid transparent;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: #666;
   cursor: pointer;
@@ -79,23 +81,23 @@
 }
 
 .scan-method {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .scan-form {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .token-input {
   width: 100%;
-  height: 120px;
+  height: 100px;
   padding: 12px;
   border: 2px solid #e0e0e0;
   border-radius: 8px;
   font-family: monospace;
   font-size: 13px;
-  resize: vertical;
-  margin-bottom: 12px;
+  resize: none;
+  margin-bottom: 10px;
 }
 
 .token-input:focus {
@@ -106,13 +108,13 @@
 
 .verify-btn {
   width: 100%;
-  padding: 14px;
+  padding: 12px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
   border-radius: 8px;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 15px;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
 }
@@ -135,19 +137,19 @@
 
 .start-camera-btn {
   width: 100%;
-  padding: 40px;
+  padding: 32px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
   border-radius: 12px;
   font-weight: 600;
-  font-size: 18px;
+  font-size: 16px;
   cursor: pointer;
   transition: transform 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .start-camera-btn svg {
@@ -169,29 +171,29 @@
   width: 100%;
   border-radius: 12px;
   background: black;
-  max-height: 400px;
+  max-height: 300px;
   object-fit: cover;
 }
 
 .camera-controls {
   display: flex;
-  gap: 12px;
+  gap: 10px;
 }
 
 .capture-btn {
   flex: 2;
-  padding: 14px;
+  padding: 12px;
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: white;
   border: none;
   border-radius: 8px;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 14px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .capture-btn svg {
@@ -205,13 +207,13 @@
 
 .stop-camera-btn {
   flex: 1;
-  padding: 14px;
+  padding: 12px;
   background: #ef4444;
   color: white;
   border: none;
   border-radius: 8px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
 }
 
@@ -219,23 +221,23 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .upload-btn {
   width: 100%;
-  padding: 40px;
+  padding: 32px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: 2px dashed rgba(255,255,255,0.5);
   border-radius: 12px;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 15px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   transition: transform 0.2s;
 }
 
@@ -262,13 +264,15 @@
 .error-message {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px;
+  gap: 10px;
+  padding: 14px;
   background: #fee;
   border: 2px solid #f87171;
   border-radius: 8px;
   color: #dc2626;
   font-weight: 500;
+  font-size: 14px;
+  margin-bottom: 10px;
 }
 
 .error-message svg {
@@ -277,10 +281,11 @@
 }
 
 .result-card {
-  padding: 24px;
+  padding: 20px;
   border-radius: 12px;
   border: 2px solid;
   animation: slideIn 0.3s ease-out;
+  margin-top: 10px;
 }
 
 .result-card.success {
@@ -304,16 +309,17 @@
 .result-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 10px;
+  margin-bottom: 16px;
 }
 
 .status-icon {
-  font-size: 32px;
+  font-size: 28px;
+  flex-shrink: 0;
 }
 
 .result-header h2 {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   margin: 0;
 }
@@ -321,16 +327,16 @@
 .result-details {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .detail-row {
   display: flex;
   justify-content: space-between;
-  padding: 10px;
+  padding: 8px 10px;
   background: white;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .detail-row .label {

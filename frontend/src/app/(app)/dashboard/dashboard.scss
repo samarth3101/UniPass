@@ -488,8 +488,13 @@
   .event-status {
     width: 8px;
     height: 8px;
+    min-width: 8px;
+    min-height: 8px;
+    max-width: 8px;
+    max-height: 8px;
     border-radius: 50%;
     flex-shrink: 0;
+    align-self: center;
 
     &.completed {
       background: #9ca3af;

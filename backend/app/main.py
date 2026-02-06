@@ -27,6 +27,7 @@ from app.routes.admin import router as admin_router
 from app.routes.monitor import router as monitor_router
 from app.routes.students import router as students_router
 from app.routes.organizers import router as organizers_router
+from app.routes.certificates import router as certificates_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -38,6 +39,15 @@ app = FastAPI(title=settings.PROJECT_NAME)
 # Add rate limiter to app state
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Add CORS middleware BEFORE including routers
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.CORS_ORIGINS.split(','),
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(health_router)
 app.include_router(event_router)
@@ -53,14 +63,7 @@ app.include_router(admin_router)
 app.include_router(monitor_router)
 app.include_router(students_router)
 app.include_router(organizers_router)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS.split(','),
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+app.include_router(certificates_router)
 
 @app.get("/")
 def root():

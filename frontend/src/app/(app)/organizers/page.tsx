@@ -20,18 +20,19 @@ export default function OrganizersPage() {
   const [loading, setLoading] = useState(true);
   const [selectedOrganizerId, setSelectedOrganizerId] = useState<number | null>(null);
 
-  useEffect(() => {
-    async function loadOrganizers() {
-      try {
-        const data = await api.get("/admin/organizers");
-        setOrganizers(data);
-      } catch (error) {
-        console.error("Failed to load organizers:", error);
-      } finally {
-        setLoading(false);
-      }
+  async function loadOrganizers() {
+    try {
+      setLoading(true);
+      const data = await api.get("/admin/organizers");
+      setOrganizers(data);
+    } catch (error) {
+      console.error("Failed to load organizers:", error);
+    } finally {
+      setLoading(false);
     }
+  }
 
+  useEffect(() => {
     loadOrganizers();
   }, []);
 
@@ -140,6 +141,7 @@ export default function OrganizersPage() {
         <OrganizerModal
           organizerId={selectedOrganizerId}
           onClose={() => setSelectedOrganizerId(null)}
+          onUpdate={loadOrganizers}
         />
       )}
     </div>

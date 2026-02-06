@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "@/services/api";
+import { toast } from "@/components/Toast";
 import "./organizer-modal.scss";
 
 interface OrganizerAnalytics {
@@ -36,28 +37,73 @@ interface OrganizerAnalytics {
 interface OrganizerModalProps {
   organizerId: number;
   onClose: () => void;
+  onUpdate: () => void;
 }
 
-export default function OrganizerModal({ organizerId, onClose }: OrganizerModalProps) {
+export default function OrganizerModal({ organizerId, onClose, onUpdate }: OrganizerModalProps) {
   const [data, setData] = useState<OrganizerAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [savingName, setSavingName] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  async function fetchData() {
+    try {
+      setError(null);
+      const res = await api.get(`/organizers/${organizerId}/analytics`);
+      setData(res);
+      setNewName(res.organizer.full_name);
+    } catch (e: any) {
+      console.error("Failed to load organizer analytics:", e);
+      setError(e?.message || "Failed to load organizer data");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        setError(null);
-        const res = await api.get(`/organizers/${organizerId}/analytics`);
-        setData(res);
-      } catch (e: any) {
-        console.error("Failed to load organizer analytics:", e);
-        setError(e?.message || "Failed to load organizer data");
-      } finally {
-        setLoading(false);
-      }
-    }
     fetchData();
   }, [organizerId]);
+
+  async function handleSaveName() {
+    if (!newName.trim()) {
+      toast.error("Name cannot be empty");
+      return;
+    }
+
+    setSavingName(true);
+    try {
+      await api.put(`/admin/users/${organizerId}/name?full_name=${encodeURIComponent(newName.trim())}`);
+      toast.success("Name updated successfully");
+      setEditingName(false);
+      await fetchData();
+      onUpdate();
+    } catch (e: any) {
+      console.error("Failed to update name:", e);
+      toast.error(e?.message || "Failed to update name");
+    } finally {
+      setSavingName(false);
+    }
+  }
+
+  async function handleDelete() {
+    setDeleting(true);
+    try {
+      await api.delete(`/admin/users/${organizerId}`);
+      toast.success("Organizer deleted successfully");
+      onUpdate();
+      onClose();
+    } catch (e: any) {
+      console.error("Failed to delete organizer:", e);
+      toast.error(e?.message || "Failed to delete organizer");
+      setShowDeleteConfirm(false);
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   function formatDateTime(isoString: string) {
     if (!isoString) return "N/A";
@@ -86,9 +132,12 @@ export default function OrganizerModal({ organizerId, onClose }: OrganizerModalP
         </button>
 
         {loading ? (
-          <div className="modal-loading">Loading organizer analytics...</div>
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Loading organizer data...</p>
+          </div>
         ) : error ? (
-          <div className="modal-error">
+          <div className="error-container">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="10"/>
               <line x1="15" y1="9" x2="9" y2="15"/>
@@ -109,17 +158,60 @@ export default function OrganizerModal({ organizerId, onClose }: OrganizerModalP
                 </svg>
               </div>
               <div className="organizer-info">
-                <h2>{data.organizer.full_name}</h2>
-                <div className="organizer-meta">
-                  <span className="organizer-email">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                      <polyline points="22,6 12,13 2,6"/>
-                    </svg>
-                    {data.organizer.email}
-                  </span>
-                  <span className="role-badge">{data.organizer.role}</span>
-                </div>
+                {editingName ? (
+                  <div className="name-edit-form">
+                    <input
+                      type="text"
+                      value={newName}
+                      onChange={(e) => setNewName(e.target.value)}
+                      placeholder="Enter organizer name"
+                      className="name-input"
+                      autoFocus
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          handleSaveName();
+                        }
+                      }}
+                    />
+                    <div className="name-actions">
+                      <button onClick={handleSaveName} disabled={savingName} className="save-btn">
+                        {savingName ? "Saving..." : "Save"}
+                      </button>
+                      <button onClick={() => {
+                        setEditingName(false);
+                        setNewName(data.organizer.full_name);
+                      }} className="cancel-btn">
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <h2>
+                      {data.organizer.full_name}
+                      <button 
+                        onClick={() => setEditingName(true)} 
+                        className="edit-name-btn"
+                        title="Edit name"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                      </button>
+                    </h2>
+                    <div className="organizer-meta">
+                      <span className="organizer-email">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                          <polyline points="22,6 12,13 2,6"/>
+                        </svg>
+                        {data.organizer.email}
+                      </span>
+                      <span className="role-badge">{data.organizer.role}</span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
@@ -179,6 +271,25 @@ export default function OrganizerModal({ organizerId, onClose }: OrganizerModalP
               </div>
             </div>
 
+            {/* Delete Button */}
+            <div className="modal-actions">
+              <button 
+                onClick={() => setShowDeleteConfirm(true)} 
+                className="delete-user-btn"
+                title={data.statistics.total_events > 0 
+                  ? `Cannot delete organizer with ${data.statistics.total_events} event(s)` 
+                  : "Delete organizer"}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M3 6h18"/>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  <line x1="10" y1="11" x2="10" y2="17"/>
+                  <line x1="14" y1="11" x2="14" y2="17"/>
+                </svg>
+                Delete Organizer
+              </button>
+            </div>
+
             {/* Events List */}
             <div className="events-section">
               <h3>Events ({data.events.length})</h3>
@@ -233,6 +344,39 @@ export default function OrganizerModal({ organizerId, onClose }: OrganizerModalP
             </div>
           </>
         ) : null}
+
+        {/* Delete Confirmation Dialog */}
+        {showDeleteConfirm && (
+          <div className="confirm-dialog">
+            <div className="confirm-content">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <h3>Delete Organizer?</h3>
+              <p>Are you sure you want to delete <strong>{data?.organizer.full_name}</strong>? 
+              {data && data.statistics.total_events > 0 && (
+                <span style={{color: '#dc2626', display: 'block', marginTop: '8px', fontWeight: 600}}>
+                  ⚠️ This organizer has {data.statistics.total_events} event(s) and cannot be deleted.
+                </span>
+              )}
+              </p>
+              <div className="confirm-actions">
+                <button onClick={() => setShowDeleteConfirm(false)} className="cancel-btn" disabled={deleting}>
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleDelete} 
+                  className="confirm-delete-btn" 
+                  disabled={deleting || (data && data.statistics.total_events > 0)}
+                >
+                  {deleting ? "Deleting..." : "Delete"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

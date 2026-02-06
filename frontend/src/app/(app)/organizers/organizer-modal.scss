@@ -1,4 +1,4 @@
-@import "../attendance/student-modal.scss";
+@use "../attendance/student-modal.scss";
 
 // Extend base modal styles with organizer-specific styles
 .organizer-modal-content {
@@ -88,6 +88,9 @@
   font-size: 26px;
   margin: 0 0 8px 0;
   color: #1f2937;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .organizer-meta {
@@ -130,10 +133,10 @@
 .events-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   max-height: 400px;
   overflow-y: auto;
-  padding-right: 8px;
+  padding: 6px 8px 6px 0;
 }
 
 .events-list::-webkit-scrollbar {
@@ -167,12 +170,14 @@
   border-radius: 12px;
   padding: 16px;
   transition: all 0.2s;
+  position: relative;
 }
 
 .event-item:hover {
   border-color: #f59e0b;
   box-shadow: 0 4px 12px rgba(245, 158, 11, 0.1);
   transform: translateY(-2px);
+  z-index: 10;
 }
 
 .event-header {
@@ -295,5 +300,205 @@
 
   .event-stat-value {
     font-size: 16px;
+  }
+}
+
+// Name editing styles
+.edit-name-btn {
+  background: none;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+  color: #94a3b8;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: #f8fafc;
+    color: #4f46e5;
+  }
+}
+
+.name-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+
+  .name-input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 2px solid #e5e9f2;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    font-family: inherit;
+    transition: all 0.2s ease;
+
+    &:focus {
+      outline: none;
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+  }
+
+  .name-actions {
+    display: flex;
+    gap: 8px;
+
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &.save-btn {
+        background: #10b981;
+        color: white;
+
+        &:hover:not(:disabled) {
+          background: #059669;
+        }
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+      }
+
+      &.cancel-btn {
+        background: #f1f5f9;
+        color: #64748b;
+
+        &:hover {
+          background: #e2e8f0;
+        }
+      }
+    }
+  }
+}
+
+// Delete button and confirmation dialog styles
+.modal-actions {
+  margin: 24px 0;
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.delete-user-btn {
+  padding: 10px 20px;
+  background: #fee;
+  color: #dc2626;
+  border: 2px solid #fecaca;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  font-size: 14px;
+
+  &:hover {
+    background: #fecaca;
+    border-color: #ef4444;
+    transform: translateY(-2px);
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.confirm-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.2s ease;
+}
+
+.confirm-content {
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  animation: slideUp 0.3s ease;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+
+  svg {
+    margin-bottom: 16px;
+  }
+
+  h3 {
+    margin: 0 0 12px 0;
+    font-size: 20px;
+    color: #1e293b;
+  }
+
+  p {
+    margin: 0 0 24px 0;
+    color: #64748b;
+    line-height: 1.5;
+
+    strong {
+      color: #1e293b;
+    }
+  }
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+
+  button {
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    border: none;
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  .cancel-btn {
+    background: #f1f5f9;
+    color: #64748b;
+
+    &:hover:not(:disabled) {
+      background: #e2e8f0;
+    }
+  }
+
+  .confirm-delete-btn {
+    background: #ef4444;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background: #dc2626;
+    }
   }
 }
