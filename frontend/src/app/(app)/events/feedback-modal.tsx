@@ -63,7 +63,30 @@ export default function FeedbackModal({ eventId, eventTitle, onClose }: Props) {
       setFeedbackList(responsesData);
     } catch (error: any) {
       console.error("Failed to fetch feedback:", error);
-      toast.error(error.response?.data?.detail || "Failed to load feedback data");
+      
+      // Handle "no feedback yet" gracefully
+      const errorMessage = error.message || error.response?.data?.detail || "Failed to load feedback data";
+      
+      if (errorMessage.toLowerCase().includes("no feedback") || 
+          errorMessage.toLowerCase().includes("not found")) {
+        toast.info("No feedback submitted yet. Check back later!");
+        // Set empty data to show the empty state UI
+        setSummary({
+          event_id: eventId,
+          total_responses: 0,
+          avg_overall_rating: 0,
+          avg_content_quality: 0,
+          avg_organization: 0,
+          avg_venue: 0,
+          recommendation_percentage: 0,
+          sentiment_positive: 0,
+          sentiment_neutral: 0,
+          sentiment_negative: 0,
+        });
+        setFeedbackList([]);
+      } else {
+        toast.error(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
@@ -120,7 +143,20 @@ export default function FeedbackModal({ eventId, eventTitle, onClose }: Props) {
               <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
             <h3>No Feedback Yet</h3>
-            <p>No students have submitted feedback for this event.</p>
+            <p>No students have submitted feedback for this event yet.</p>
+            <p style={{ fontSize: "0.9rem", opacity: 0.7, marginTop: "0.5rem" }}>
+              Feedback can only be submitted by attendees after the event.
+            </p>
+            <button 
+              className="btn btn-primary" 
+              style={{ marginTop: "1.5rem" }}
+              onClick={() => {
+                setLoading(true);
+                fetchFeedbackData();
+              }}
+            >
+              Refresh
+            </button>
           </div>
         </div>
       </div>
@@ -133,8 +169,21 @@ export default function FeedbackModal({ eventId, eventTitle, onClose }: Props) {
         <button className="close-btn" onClick={onClose}>×</button>
         
         <div className="modal-header">
-          <h2>Event Feedback</h2>
-          <p className="event-title">{eventTitle}</p>
+          <div>
+            <h2>Event Feedback</h2>
+            <p className="event-title">{eventTitle}</p>
+          </div>
+          <button 
+            className="btn btn-secondary btn-sm"
+            onClick={() => {
+              setLoading(true);
+              fetchFeedbackData();
+            }}
+            style={{ marginLeft: "auto" }}
+            title="Refresh feedback data"
+          >
+            ↻ Refresh
+          </button>
         </div>
 
         <div className="feedback-tabs">
@@ -142,18 +191,25 @@ export default function FeedbackModal({ eventId, eventTitle, onClose }: Props) {
             className={`tab ${activeTab === "summary" ? "active" : ""}`}
             onClick={() => setActiveTab("summary")}
           >
-            Summary
+            📊 Summary
           </button>
           <button
             className={`tab ${activeTab === "responses" ? "active" : ""}`}
             onClick={() => setActiveTab("responses")}
           >
-            Responses ({summary.total_responses})
+            💬 Responses ({summary.total_responses})
           </button>
         </div>
 
         {activeTab === "summary" && (
           <div className="feedback-summary-content">
+            {loading && (
+              <div className="loading-overlay">
+                <div className="spinner"></div>
+                <p>Refreshing feedback data...</p>
+              </div>
+            )}
+            
             <div className="summary-grid">
               <div className="summary-card highlight">
                 <div className="card-icon">📊</div>
@@ -216,6 +272,9 @@ export default function FeedbackModal({ eventId, eventTitle, onClose }: Props) {
 
             <div className="sentiment-analysis">
               <h3>Sentiment Analysis</h3>
+              <p style={{ fontSize: "0.9rem", opacity: 0.7, marginBottom: "1rem" }}>
+                AI-powered sentiment analysis of feedback responses
+              </p>
               <div className="sentiment-bars">
                 <div className="sentiment-bar">
                   <div className="bar-label">
@@ -225,7 +284,11 @@ export default function FeedbackModal({ eventId, eventTitle, onClose }: Props) {
                   <div className="bar-wrapper">
                     <div 
                       className="bar positive" 
-                      style={{ width: `${(summary.sentiment_positive / summary.total_responses) * 100}%` }}
+                      style={{ 
+                        width: summary.total_responses > 0 
+                          ? `${(summary.sentiment_positive / summary.total_responses) * 100}%` 
+                          : '0%' 
+                      }}
                     ></div>
                   </div>
                   <span className="bar-count">{summary.sentiment_positive}</span>
@@ -239,7 +302,11 @@ export default function FeedbackModal({ eventId, eventTitle, onClose }: Props) {
                   <div className="bar-wrapper">
                     <div 
                       className="bar neutral" 
-                      style={{ width: `${(summary.sentiment_neutral / summary.total_responses) * 100}%` }}
+                      style={{ 
+                        width: summary.total_responses > 0 
+                          ? `${(summary.sentiment_neutral / summary.total_responses) * 100}%` 
+                          : '0%' 
+                      }}
                     ></div>
                   </div>
                   <span className="bar-count">{summary.sentiment_neutral}</span>
@@ -253,7 +320,11 @@ export default function FeedbackModal({ eventId, eventTitle, onClose }: Props) {
                   <div className="bar-wrapper">
                     <div 
                       className="bar negative" 
-                      style={{ width: `${(summary.sentiment_negative / summary.total_responses) * 100}%` }}
+                      style={{ 
+                        width: summary.total_responses > 0 
+                          ? `${(summary.sentiment_negative / summary.total_responses) * 100}%` 
+                          : '0%' 
+                      }}
                     ></div>
                   </div>
                   <span className="bar-count">{summary.sentiment_negative}</span>
@@ -265,6 +336,19 @@ export default function FeedbackModal({ eventId, eventTitle, onClose }: Props) {
 
         {activeTab === "responses" && (
           <div className="feedback-responses-content">
+            {loading && (
+              <div className="loading-overlay">
+                <div className="spinner"></div>
+                <p>Refreshing feedback data...</p>
+              </div>
+            )}
+            
+            {feedbackList.length === 0 && !loading && (
+              <div className="empty-state">
+                <p>No individual responses to display.</p>
+              </div>
+            )}
+            
             {feedbackList.map((feedback) => {
               const sentiment = getSentimentLabel(feedback.sentiment_score);
               return (
