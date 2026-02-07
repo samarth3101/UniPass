@@ -683,3 +683,292 @@ def send_certificate_email(
         print(f"❌ Failed to send certificate email to {to_email}: {str(e)}")
         return False
 
+
+def create_feedback_request_email_html(
+    student_name: str,
+    event_title: str,
+    event_id: int,
+    student_prn: str
+) -> str:
+    """
+    Create beautiful HTML email template for feedback request
+    """
+    feedback_url = f"{settings.FRONTEND_URL}/feedback/{event_id}/{student_prn}"
+    
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body {{
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background-color: #f8fafb;
+                margin: 0;
+                padding: 0;
+            }}
+            .container {{
+                max-width: 600px;
+                margin: 40px auto;
+                background: white;
+                border-radius: 16px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+                overflow: hidden;
+            }}
+            .header {{
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                padding: 40px 30px;
+                text-align: center;
+                color: white;
+            }}
+            .header h1 {{
+                margin: 0;
+                font-size: 32px;
+                font-weight: 700;
+            }}
+            .header p {{
+                margin: 12px 0 0 0;
+                font-size: 16px;
+                opacity: 0.95;
+            }}
+            .content {{
+                padding: 40px 30px;
+            }}
+            .greeting {{
+                font-size: 18px;
+                color: #1e293b;
+                margin-bottom: 20px;
+                font-weight: 500;
+            }}
+            .message {{
+                font-size: 16px;
+                color: #475569;
+                line-height: 1.6;
+                margin-bottom: 30px;
+            }}
+            .event-box {{
+                background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+                border-left: 4px solid #10b981;
+                padding: 20px;
+                border-radius: 8px;
+                margin-bottom: 30px;
+            }}
+            .event-box h3 {{
+                margin: 0 0 8px 0;
+                color: #065f46;
+                font-size: 20px;
+            }}
+            .event-box p {{
+                margin: 0;
+                color: #047857;
+                font-size: 14px;
+            }}
+            .cta-button {{
+                display: inline-block;
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                color: white;
+                text-decoration: none;
+                padding: 16px 48px;
+                border-radius: 12px;
+                font-size: 18px;
+                font-weight: 600;
+                text-align: center;
+                margin: 20px 0;
+                box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+                transition: all 0.3s ease;
+            }}
+            .cta-button:hover {{
+                transform: translateY(-2px);
+                box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+            }}
+            .button-container {{
+                text-align: center;
+                margin: 30px 0;
+            }}
+            .benefits {{
+                background: #f8fafc;
+                padding: 20px;
+                border-radius: 12px;
+                margin-bottom: 30px;
+            }}
+            .benefits h3 {{
+                margin: 0 0 15px 0;
+                color: #1e293b;
+                font-size: 18px;
+            }}
+            .benefit-item {{
+                display: flex;
+                align-items: start;
+                margin-bottom: 12px;
+            }}
+            .benefit-icon {{
+                background: #10b981;
+                color: white;
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-right: 12px;
+                flex-shrink: 0;
+                font-size: 14px;
+                font-weight: bold;
+            }}
+            .benefit-text {{
+                color: #475569;
+                font-size: 15px;
+                line-height: 1.5;
+            }}
+            .time-estimate {{
+                background: #fef3c7;
+                border-left: 4px solid #f59e0b;
+                padding: 15px;
+                border-radius: 8px;
+                margin-bottom: 30px;
+            }}
+            .time-estimate p {{
+                margin: 0;
+                color: #92400e;
+                font-size: 15px;
+            }}
+            .footer {{
+                background: #f8fafc;
+                padding: 30px;
+                text-align: center;
+                border-top: 1px solid #e2e8f0;
+            }}
+            .footer p {{
+                color: #64748b;
+                font-size: 14px;
+                margin: 5px 0;
+            }}
+            .footer a {{
+                color: #4f46e5;
+                text-decoration: none;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>📝 Your Feedback Matters!</h1>
+                <p>Help us improve future events</p>
+            </div>
+            
+            <div class="content">
+                <p class="greeting">Hello {student_name},</p>
+                
+                <p class="message">
+                    Thank you for attending our event! We hope you had a great experience. 
+                    Your feedback is invaluable in helping us create even better events in the future.
+                </p>
+                
+                <div class="event-box">
+                    <h3>📌 {event_title}</h3>
+                    <p>Share your thoughts about this event</p>
+                </div>
+                
+                <div class="time-estimate">
+                    <p>⏱️ <strong>Takes only 2-3 minutes</strong> to complete</p>
+                </div>
+                
+                <div class="benefits">
+                    <h3>Why your feedback matters:</h3>
+                    <div class="benefit-item">
+                        <div class="benefit-icon">✓</div>
+                        <div class="benefit-text">Helps us improve content quality and organization</div>
+                    </div>
+                    <div class="benefit-item">
+                        <div class="benefit-icon">✓</div>
+                        <div class="benefit-text">Influences future event topics and speakers</div>
+                    </div>
+                    <div class="benefit-item">
+                        <div class="benefit-icon">✓</div>
+                        <div class="benefit-text">Ensures better experience for all students</div>
+                    </div>
+                    <div class="benefit-item">
+                        <div class="benefit-icon">✓</div>
+                        <div class="benefit-text">Your honest opinion helps event organizers grow</div>
+                    </div>
+                </div>
+                
+                <div class="button-container">
+                    <a href="{feedback_url}" class="cta-button">
+                        Submit Feedback
+                    </a>
+                </div>
+                
+                <p class="message" style="font-size: 14px; color: #64748b; text-align: center;">
+                    This feedback form is anonymous and will only take a few minutes of your time.<br>
+                    Your responses will be used to improve future events.
+                </p>
+            </div>
+            
+            <div class="footer">
+                <p><strong>UniPass Event Management System</strong></p>
+                <p>Secure AI-Powered Attendance & Feedback</p>
+                <p style="margin-top: 15px;">
+                    <a href="{settings.FRONTEND_URL}">Visit Dashboard</a> | 
+                    <a href="mailto:{settings.EMAIL_FROM}">Contact Support</a>
+                </p>
+                <p style="margin-top: 15px; font-size: 12px;">
+                    © 2026 UniPass. All rights reserved.
+                </p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    return html
+
+
+def send_feedback_request_email(
+    to_email: str,
+    student_name: str,
+    event_title: str,
+    event_id: int,
+    student_prn: str
+) -> bool:
+    """
+    Send feedback request email to student who attended event
+    Returns True if email sent successfully
+    """
+    # Check if SMTP is configured
+    if not settings.SMTP_USER or not settings.SMTP_PASSWORD:
+        print("⚠️ SMTP not configured. Skipping feedback request email.")
+        print(f"Would send feedback request to: {to_email}")
+        return False
+    
+    try:
+        # Create email
+        msg = MIMEMultipart('related')
+        msg['Subject'] = f"📝 We'd love your feedback on {event_title}"
+        msg['From'] = f"{settings.EMAIL_FROM_NAME} <{settings.EMAIL_FROM}>"
+        msg['To'] = to_email
+        
+        # Create HTML body
+        html_body = create_feedback_request_email_html(
+            student_name=student_name,
+            event_title=event_title,
+            event_id=event_id,
+            student_prn=student_prn
+        )
+        
+        # Attach HTML
+        html_part = MIMEText(html_body, 'html')
+        msg.attach(html_part)
+        
+        # Send email
+        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+            server.starttls()
+            server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+            server.send_message(msg)
+        
+        print(f"✅ Feedback request email sent successfully to {to_email}")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Failed to send feedback request email to {to_email}: {str(e)}")
+        return False
