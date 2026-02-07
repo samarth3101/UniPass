@@ -53,6 +53,10 @@ export default function AuditLogs({ eventId }: Props) {
         return "badge badge-warning";
       case "override_used":
         return "badge badge-warning";
+      case "certificates_pushed":
+        return "badge badge-certificate";
+      case "feedback_sent":
+        return "badge badge-feedback";
       default:
         return "badge";
     }
@@ -72,8 +76,12 @@ export default function AuditLogs({ eventId }: Props) {
         return "Ticket Deleted";
       case "override_used":
         return "Override";
+      case "certificates_pushed":
+        return "Certificates Pushed";
+      case "feedback_sent":
+        return "Feedback Requests Sent";
       default:
-        return actionType;
+        return actionType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
   }
 
@@ -146,6 +154,50 @@ export default function AuditLogs({ eventId }: Props) {
           <div className="log-details">
             <span>Manual override for: {details.student_prn}</span>
             {details.reason && <span> - {details.reason}</span>}
+          </div>
+        );
+      
+      case "certificates_pushed":
+        return (
+          <div className="log-details certificate-details">
+            <div className="cert-stat">
+              <span className="stat-label">Total Eligible:</span>
+              <span className="stat-value">{details.total_eligible || 0}</span>
+            </div>
+            <div className="cert-stat">
+              <span className="stat-label">Certificates Issued:</span>
+              <span className="stat-value success">{details.certificates_issued || 0}</span>
+            </div>
+            <div className="cert-stat">
+              <span className="stat-label">Emails Sent:</span>
+              <span className="stat-value success">{details.emails_sent || 0}</span>
+            </div>
+            {(details.emails_failed && details.emails_failed > 0) && (
+              <div className="cert-stat">
+                <span className="stat-label">Emails Failed:</span>
+                <span className="stat-value error">{details.emails_failed}</span>
+              </div>
+            )}
+          </div>
+        );
+      
+      case "feedback_sent":
+        return (
+          <div className="log-details feedback-details">
+            <div className="feedback-stat">
+              <span className="stat-label">Total Attended:</span>
+              <span className="stat-value">{details.total_attended || 0}</span>
+            </div>
+            <div className="feedback-stat">
+              <span className="stat-label">Emails Sent:</span>
+              <span className="stat-value success">{details.sent_count || 0}</span>
+            </div>
+            {(details.failed_count && details.failed_count > 0) && (
+              <div className="feedback-stat">
+                <span className="stat-label">Emails Failed:</span>
+                <span className="stat-value error">{details.failed_count}</span>
+              </div>
+            )}
           </div>
         );
       

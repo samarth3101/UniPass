@@ -221,22 +221,22 @@ def get_feedback_summary(
     recommend_percentage = (recommend_count / total) * 100
     
     # Sentiment breakdown
-    sentiment_breakdown = {
-        "positive": sum(1 for f in feedbacks if f.sentiment_score == 1),
-        "neutral": sum(1 for f in feedbacks if f.sentiment_score == 0),
-        "negative": sum(1 for f in feedbacks if f.sentiment_score == -1)
-    }
+    sentiment_positive = sum(1 for f in feedbacks if f.sentiment_score == 1)
+    sentiment_neutral = sum(1 for f in feedbacks if f.sentiment_score == 0)
+    sentiment_negative = sum(1 for f in feedbacks if f.sentiment_score == -1)
     
     return FeedbackSummary(
         event_id=event_id,
         total_responses=total,
-        average_overall=round(avg_overall, 2),
-        average_content=round(avg_content, 2),
-        average_organization=round(avg_organization, 2),
-        average_venue=round(avg_venue, 2),
-        average_speaker=round(avg_speaker, 2) if avg_speaker else None,
-        recommend_percentage=round(recommend_percentage, 1),
-        sentiment_breakdown=sentiment_breakdown
+        avg_overall_rating=round(avg_overall, 2),
+        avg_content_quality=round(avg_content, 2),
+        avg_organization=round(avg_organization, 2),
+        avg_venue=round(avg_venue, 2),
+        avg_speaker=round(avg_speaker, 2) if avg_speaker else None,
+        recommendation_percentage=round(recommend_percentage, 1),
+        sentiment_positive=sentiment_positive,
+        sentiment_neutral=sentiment_neutral,
+        sentiment_negative=sentiment_negative
     )
 
 
@@ -247,7 +247,7 @@ def get_event_feedback(
     current_user: User = Depends(require_organizer)
 ):
     """
-    Get all feedback submissions for an event.
+    Get all feedback submissions for an event with student names.
     """
     # Verify event exists
     event = db.query(Event).filter(Event.id == event_id).first()
@@ -258,11 +258,36 @@ def get_event_feedback(
     if current_user.role != "ADMIN" and event.created_by != current_user.id:
         raise HTTPException(status_code=403, detail="Access denied")
     
+    # Get feedbacks with student names
     feedbacks = db.query(Feedback).filter(
         Feedback.event_id == event_id
     ).order_by(Feedback.submitted_at.desc()).all()
     
-    return feedbacks
+    # Enrich with student names
+    result = []
+    for feedback in feedbacks:
+        student = db.query(Student).filter(Student.prn == feedback.student_prn).first()
+        feedback_dict = {
+            "id": feedback.id,
+            "event_id": feedback.event_id,
+            "student_prn": feedback.student_prn,
+            "student_name": student.name if student else None,
+            "overall_rating": feedback.overall_rating,
+            "content_quality": feedback.content_quality,
+            "organization_rating": feedback.organization_rating,
+            "venue_rating": feedback.venue_rating,
+            "speaker_rating": feedback.speaker_rating,
+            "what_liked": feedback.what_liked,
+            "what_improve": feedback.what_improve,
+            "additional_comments": feedback.additional_comments,
+            "would_recommend": feedback.would_recommend,
+            "sentiment_score": feedback.sentiment_score,
+            "ai_summary": feedback.ai_summary,
+            "submitted_at": feedback.submitted_at
+        }
+        result.append(FeedbackResponse(**feedback_dict))
+    
+    return result
 
 
 @router.get("/check-eligibility/{event_id}/{student_prn}")
@@ -275,6 +300,11 @@ def check_feedback_eligibility(
     Check if a student is eligible to submit feedback (attended and hasn't submitted yet).
     Public endpoint for feedback form validation.
     """
+    # Get event details
+    event = db.query(Event).filter(Event.id == event_id).first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    
     # Check if attended
     attendance = db.query(Attendance).filter(
         Attendance.event_id == event_id,
@@ -284,7 +314,9 @@ def check_feedback_eligibility(
     if not attendance:
         return {
             "eligible": False,
-            "reason": "You did not attend this event"
+            "event_name": event.title,
+            "attended": False,
+            "already_submitted": False
         }
     
     # Check if already submitted
@@ -296,10 +328,14 @@ def check_feedback_eligibility(
     if existing_feedback:
         return {
             "eligible": False,
-            "reason": "You have already submitted feedback for this event"
+            "event_name": event.title,
+            "attended": True,
+            "already_submitted": True
         }
     
     return {
         "eligible": True,
-        "reason": None
+        "event_name": event.title,
+        "attended": True,
+        "already_submitted": False
     }

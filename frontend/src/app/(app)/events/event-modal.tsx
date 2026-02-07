@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import api from "@/services/api";
 import { isAdmin } from "@/lib/auth";
 import AuditLogs from "./audit-logs";
+import FeedbackModal from "./feedback-modal";
 import { toast } from "@/components/Toast";
 
 type Event = {
@@ -53,6 +54,7 @@ export default function EventModal({ event, onClose }: Props) {
   const [pushingCertificates, setPushingCertificates] = useState(false);
   const [showCertificateInfo, setShowCertificateInfo] = useState(false);
   const [sendingFeedback, setSendingFeedback] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
   async function handleUpdate() {
     setLoading(true);
@@ -311,6 +313,17 @@ export default function EventModal({ event, onClose }: Props) {
               <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
             {sendingFeedback ? 'Sending...' : 'Send Feedback Requests'}
+          </button>
+
+          <button type="button" onClick={() => setShowFeedbackModal(true)} className="control-btn view-feedback-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <polyline points="14 2 14 8 20 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <polyline points="10 9 9 9 8 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            View Feedback
           </button>
         </div>
 
@@ -604,6 +617,14 @@ export default function EventModal({ event, onClose }: Props) {
           )}
         </div>
       </div>
+
+      {showFeedbackModal && (
+        <FeedbackModal
+          eventId={event.id}
+          eventTitle={event.title}
+          onClose={() => setShowFeedbackModal(false)}
+        />
+      )}
     </div>
   );
 }

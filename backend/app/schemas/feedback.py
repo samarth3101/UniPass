@@ -26,6 +26,7 @@ class FeedbackResponse(BaseModel):
     id: int
     event_id: int
     student_prn: str
+    student_name: Optional[str] = None
     overall_rating: int
     content_quality: int
     organization_rating: int
@@ -46,13 +47,15 @@ class FeedbackResponse(BaseModel):
 class FeedbackSummary(BaseModel):
     event_id: int
     total_responses: int
-    average_overall: float
-    average_content: float
-    average_organization: float
-    average_venue: float
-    average_speaker: Optional[float]
-    recommend_percentage: float
-    sentiment_breakdown: dict  # {"positive": 10, "neutral": 5, "negative": 2}
+    avg_overall_rating: float
+    avg_content_quality: float
+    avg_organization: float
+    avg_venue: float
+    avg_speaker: Optional[float] = None
+    recommendation_percentage: float
+    sentiment_positive: int
+    sentiment_neutral: int
+    sentiment_negative: int
 
 
 class SendFeedbackRequest(BaseModel):
