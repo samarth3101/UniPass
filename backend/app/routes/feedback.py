@@ -264,7 +264,6 @@ def get_event_feedback(
     Get all feedback submissions for an event with student names.
     Returns empty list if no feedback submitted yet.
     """
-    """
     # Verify event exists
     event = db.query(Event).filter(Event.id == event_id).first()
     if not event:

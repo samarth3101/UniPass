@@ -201,13 +201,22 @@ export default function FeedbackModal({ eventId, eventTitle, onClose }: Props) {
             className={`tab ${activeTab === "summary" ? "active" : ""}`}
             onClick={() => setActiveTab("summary")}
           >
-            📊 Summary
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="3" width="7" height="7"/>
+              <rect x="14" y="3" width="7" height="7"/>
+              <rect x="14" y="14" width="7" height="7"/>
+              <rect x="3" y="14" width="7" height="7"/>
+            </svg>
+            Summary
           </button>
           <button
             className={`tab ${activeTab === "responses" ? "active" : ""}`}
             onClick={() => setActiveTab("responses")}
           >
-            💬 Responses ({summary.total_responses})
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            Responses ({summary.total_responses})
           </button>
         </div>
 
@@ -222,7 +231,14 @@ export default function FeedbackModal({ eventId, eventTitle, onClose }: Props) {
             
             <div className="summary-grid">
               <div className="summary-card highlight">
-                <div className="card-icon">📊</div>
+                <div className="card-icon">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                  </svg>
+                </div>
                 <div className="card-content">
                   <span className="card-label">Total Responses</span>
                   <span className="card-value">{summary.total_responses}</span>
@@ -230,7 +246,11 @@ export default function FeedbackModal({ eventId, eventTitle, onClose }: Props) {
               </div>
 
               <div className="summary-card highlight">
-                <div className="card-icon">👍</div>
+                <div className="card-icon">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+                  </svg>
+                </div>
                 <div className="card-content">
                   <span className="card-label">Would Recommend</span>
                   <span className="card-value">{summary.recommendation_percentage.toFixed(1)}%</span>
@@ -282,13 +302,20 @@ export default function FeedbackModal({ eventId, eventTitle, onClose }: Props) {
 
             <div className="sentiment-analysis">
               <h3>Sentiment Analysis</h3>
-              <p style={{ fontSize: "0.9rem", opacity: 0.7, marginBottom: "1rem" }}>
+              <p style={{ fontSize: "0.9rem", opacity: 0.6, marginBottom: "1.5rem" }}>
                 AI-powered sentiment analysis of feedback responses
               </p>
               <div className="sentiment-bars">
                 <div className="sentiment-bar">
                   <div className="bar-label">
-                    <span className="sentiment-icon positive">😊</span>
+                    <span className="sentiment-icon positive">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                        <line x1="9" y1="9" x2="9.01" y2="9"/>
+                        <line x1="15" y1="9" x2="15.01" y2="9"/>
+                      </svg>
+                    </span>
                     <span>Positive</span>
                   </div>
                   <div className="bar-wrapper">
@@ -306,7 +333,14 @@ export default function FeedbackModal({ eventId, eventTitle, onClose }: Props) {
 
                 <div className="sentiment-bar">
                   <div className="bar-label">
-                    <span className="sentiment-icon neutral">😐</span>
+                    <span className="sentiment-icon neutral">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="8" y1="15" x2="16" y2="15"/>
+                        <line x1="9" y1="9" x2="9.01" y2="9"/>
+                        <line x1="15" y1="9" x2="15.01" y2="9"/>
+                      </svg>
+                    </span>
                     <span>Neutral</span>
                   </div>
                   <div className="bar-wrapper">
@@ -324,7 +358,14 @@ export default function FeedbackModal({ eventId, eventTitle, onClose }: Props) {
 
                 <div className="sentiment-bar">
                   <div className="bar-label">
-                    <span className="sentiment-icon negative">😞</span>
+                    <span className="sentiment-icon negative">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M16 16s-1.5-2-4-2-4 2-4 2"/>
+                        <line x1="9" y1="9" x2="9.01" y2="9"/>
+                        <line x1="15" y1="9" x2="15.01" y2="9"/>
+                      </svg>
+                    </span>
                     <span>Negative</span>
                   </div>
                   <div className="bar-wrapper">
