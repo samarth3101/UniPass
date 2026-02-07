@@ -3,7 +3,7 @@
 
 **Document Purpose:** Comprehensive visual documentation for "A Secure JWT-Based Digital Ticketing and Time-Bound QR Attendance Architecture with AI-Ready Behavioral Analytics for Educational Institutions"
 
-**Date:** February 6, 2026 (Updated)  
+**Date:** February 8, 2026 (Updated with Feedback & Certificate Systems)  
 **Author:** Samarth Patil
 
 ---
@@ -22,6 +22,10 @@
 10. [Rate Limiting & Security Infrastructure](#10-rate-limiting--security-infrastructure)
 11. [Infrastructure Improvements Architecture](#11-infrastructure-improvements-architecture)
 12. [Scalability Architecture](#12-scalability-architecture)
+13. [Certificate Generation & Distribution System](#13-certificate-generation--distribution-system)
+14. [Feedback Collection System Architecture](#14-feedback-collection-system-architecture)
+15. [Feedback Eligibility & AI Sentiment Analysis](#15-feedback-eligibility--ai-sentiment-analysis)
+16. [Feedback Modal UI Component Architecture](#16-feedback-modal-ui-component-architecture)
 
 ---
 
@@ -2282,15 +2286,24 @@ graph TB
 
 ### Research Contribution
 
-**Title:** "A Secure JWT-Based Digital Ticketing and Time-Bound QR Attendance Architecture with AI-Ready Behavioral Analytics and Enterprise Governance for Educational Institutions"
+**Title:** "A Secure JWT-Based Digital Ticketing and Time-Bound QR Attendance Architecture with AI-Enhanced Feedback Analytics and Automated Certificate Distribution for Educational Institutions"
 
 **Key Contributions:**
 1. **Novel QR Security Model**: JWT tokens as QR codes with cryptographic validation
 2. **Temporal Security Protocol**: Time-bound validation as security enforcement
 3. **Governance Architecture**: Admin override model with mandatory audit trail
 4. **AI-Ready Schema**: JSONB-based flexible data model for ML without migrations
-5. **End-to-End Lifecycle**: Complete event management from registration to analytics
+5. **End-to-End Lifecycle**: Complete event management from registration to post-event feedback
 6. **Production Infrastructure**: Rate limiting, connection pooling, multi-tier security
+7. **Certificate Verification System**: JWT-secured certificates with QR verification codes
+8. **Attendance-Validated Feedback**: Eligibility checks ensuring only attendees can submit
+9. **AI Sentiment Analysis**: GPT-4 powered sentiment scoring with graceful degradation
+
+**New Research-Worthy Features (v3.0):**
+- **Automated Certificate Distribution**: Bulk PDF generation with ReportLab + SMTP delivery
+- **Feedback Collection Pipeline**: Dual validation (attendance + duplicate check) with AI enhancement
+- **Sentiment Analysis Architecture**: OpenAI GPT-4 integration with fallback to rule-based scoring
+- **Icon-Based UI Design**: Professional frontend components with subtle aesthetic design
 
 **Suitable For:**
 - IEEE/ACM Conference Papers
@@ -2307,22 +2320,704 @@ graph TB
 
 ---
 
+## 13. Certificate Generation & Distribution System
+
+**Purpose:** Automated certificate issuance workflow with PDF generation and email delivery.
+
+**Innovation:** JWT-verified certificates with QR verification codes for authenticity.
+
+```mermaid
+sequenceDiagram
+    participant O as Organizer
+    participant API as FastAPI Backend
+    participant DB as PostgreSQL
+    participant PDF as ReportLab PDF Engine
+    participant EMAIL as SMTP Service
+    participant AUDIT as Audit Logger
+
+    O->>API: POST /certificates/push/{event_id}
+    API->>DB: Get Event Details
+    DB-->>API: Event Info
+    
+    API->>DB: Query Attendees<br/>(Attendance Table)
+    DB-->>API: List of Attendees
+    
+    Note over API: Filter: Only Attended<br/>Not Just Registered
+    
+    loop For Each Attendee
+        API->>DB: Get Student Details<br/>(Name, Email, PRN)
+        DB-->>API: Student Info
+        
+        API->>API: Generate Certificate Token<br/>JWT with event_id, student_prn
+        
+        API->>PDF: Generate PDF Certificate<br/>- Student Name<br/>- Event Title<br/>- Date & Location<br/>- QR Verification Code
+        PDF-->>API: PDF Binary Data
+        
+        API->>DB: Save Certificate Record<br/>with JWT Token
+        DB-->>API: Certificate Saved
+        
+        API->>EMAIL: Send Email with Attachment<br/>- HTML Template<br/>- PDF Certificate<br/>- Verification Link
+        
+        alt Email Success
+            EMAIL-->>API: Email Sent ✓
+            Note over API: Increment success_count
+        else Email Failed
+            EMAIL-->>API: Error ✗
+            Note over API: Increment failed_count
+        end
+    end
+    
+    API->>AUDIT: Log Certificate Push Action<br/>- Total Eligible<br/>- Sent Count<br/>- Failed Count
+    AUDIT-->>DB: Save Audit Log
+    
+    API-->>O: {<br/>  "certificates_issued": 45,<br/>  "emails_sent": 43,<br/>  "emails_failed": 2<br/>}
+```
+
+**Certificate PDF Structure:**
+```mermaid
+graph TD
+    CERT[Certificate PDF] --> HEADER[Header Section]
+    CERT --> BODY[Body Section]
+    CERT --> FOOTER[Footer Section]
+    
+    HEADER --> LOGO[University Logo]
+    HEADER --> BORDER[Decorative Border]
+    
+    BODY --> TITLE["Certificate of Participation"]
+    BODY --> NAME[Student Full Name]
+    BODY --> EVENT[Event Details]
+    BODY --> DATE[Date & Location]
+    
+    FOOTER --> QR[QR Verification Code<br/>JWT Token]
+    FOOTER --> VERIFY[Verification URL<br/>/certificates/verify/{token}]
+    FOOTER --> SIGN[Digital Signature<br/>Organizer Name]
+    
+    style QR fill:#4ecdc4
+    style NAME fill:#ffe66d
+```
+
+**Certificate Verification Flow:**
+```mermaid
+sequenceDiagram
+    participant U as User/Employer
+    participant API as Backend
+    participant JWT as JWT Service
+    participant DB as Database
+    
+    U->>API: GET /certificates/verify/{token}
+    API->>JWT: Decode & Verify Token Signature
+    
+    alt Invalid Token
+        JWT-->>API: Invalid/Expired
+        API-->>U: 400 Bad Request<br/>"Invalid certificate"
+    else Valid Token
+        JWT-->>API: Decoded Payload<br/>{event_id, student_prn}
+        
+        API->>DB: Query Certificate Record<br/>WHERE token = {token}
+        DB-->>API: Certificate Details
+        
+        alt Certificate Exists
+            API->>DB: Get Event & Student Info
+            DB-->>API: Full Details
+            API-->>U: 200 OK<br/>{<br/>  valid: true,<br/>  student: {...},<br/>  event: {...},<br/>  issued_at: "..."<br/>}
+        else Not Found
+            API-->>U: 404 Not Found<br/>"Certificate not issued"
+        end
+    end
+```
+
+**Key Features:**
+1. **Bulk Generation**: Process all attendees in single API call
+2. **JWT Security**: Each certificate has unique cryptographic token
+3. **Professional PDF**: ReportLab with custom layout and branding
+4. **Email Templates**: HTML email with inline CSS and gradient styling
+5. **Audit Trail**: Complete logging of certificate generation actions
+6. **Verification System**: Public endpoint for certificate authenticity check
+
+---
+
+## 14. Feedback Collection System Architecture
+
+**Purpose:** Post-event feedback gathering with eligibility validation and AI sentiment analysis.
+
+**Innovation:** Attendance-verified feedback submission with GPT-4 powered sentiment scoring.
+
+```mermaid
+graph TB
+    subgraph "INITIATION PHASE"
+        ORG[Organizer Panel] --> SEND_REQ[Send Feedback Requests]
+        SEND_REQ --> API_CHECK[Check Event Completion]
+        API_CHECK --> GET_ATT[Get Attendees List]
+    end
+    
+    subgraph "EMAIL DISPATCH"
+        GET_ATT --> FILTER[Filter: Attended<br/>Not Just Registered]
+        FILTER --> SKIP[Skip Already Submitted]
+        SKIP --> EMAIL_QUEUE[Email Queue]
+        EMAIL_QUEUE --> SMTP[SMTP Service]
+        SMTP --> STUDENT_INBOX[Student Email]
+    end
+    
+    subgraph "STUDENT SUBMISSION"
+        STUDENT_INBOX --> FORM[Feedback Form<br/>Public URL]
+        FORM --> ELIG_CHECK[Eligibility Check API]
+        
+        ELIG_CHECK --> CHECK_ATT{Attended<br/>Event?}
+        CHECK_ATT -->|No| REJECT[403 Forbidden<br/>"Must attend to submit"]
+        CHECK_ATT -->|Yes| CHECK_DUP{Already<br/>Submitted?}
+        
+        CHECK_DUP -->|Yes| REJECT2[409 Conflict<br/>"Already submitted"]
+        CHECK_DUP -->|No| ALLOW[Allow Submission]
+    end
+    
+    subgraph "SUBMISSION PROCESSING"
+        ALLOW --> COLLECT[Collect Ratings<br/>- Overall: 1-5<br/>- Content: 1-5<br/>- Organization: 1-5<br/>- Venue: 1-5<br/>- Speaker: 1-5]
+        COLLECT --> COLLECT_TEXT[Collect Text<br/>- What Liked<br/>- What to Improve<br/>- Additional Comments]
+        COLLECT_TEXT --> COLLECT_REC[Would Recommend?<br/>Boolean]
+        
+        COLLECT_REC --> AI_ANALYZE[AI Sentiment Analysis]
+        AI_ANALYZE --> GPT4[OpenAI GPT-4<br/>Sentiment Scoring]
+        GPT4 --> SENTIMENT{Average<br/>Rating}
+        
+        SENTIMENT -->|>= 4| POS[sentiment_score = 1<br/>Positive]
+        SENTIMENT -->|>= 3| NEU[sentiment_score = 0<br/>Neutral]
+        SENTIMENT -->|< 3| NEG[sentiment_score = -1<br/>Negative]
+    end
+    
+    subgraph "DATA PERSISTENCE"
+        POS --> SAVE_DB[(PostgreSQL<br/>Feedback Table)]
+        NEU --> SAVE_DB
+        NEG --> SAVE_DB
+        SAVE_DB --> CONFIRM[200 OK<br/>Feedback Saved]
+    end
+    
+    subgraph "ORGANIZER VIEWING"
+        SAVE_DB --> ANALYTICS[Feedback Analytics]
+        ANALYTICS --> SUMMARY[Summary View<br/>- Avg Ratings<br/>- Sentiment Breakdown<br/>- Recommendation %]
+        ANALYTICS --> RESPONSES[Individual Responses<br/>- Student Names<br/>- Full Feedback<br/>- Timestamps]
+    end
+    
+    style ELIG_CHECK fill:#ff6b6b
+    style AI_ANALYZE fill:#ffe66d
+    style SAVE_DB fill:#95e1d3
+    style SUMMARY fill:#4ecdc4
+```
+
+**Feedback Data Model:**
+```mermaid
+erDiagram
+    FEEDBACK {
+        int id PK
+        int event_id FK
+        string student_prn FK
+        int overall_rating "1-5"
+        int content_quality "1-5"
+        int organization_rating "1-5"
+        int venue_rating "1-5"
+        int speaker_rating "1-5 nullable"
+        text what_liked
+        text what_improve
+        text additional_comments
+        boolean would_recommend
+        int sentiment_score "-1/0/1"
+        text ai_summary "GPT-4 summary"
+        timestamp submitted_at
+    }
+    
+    EVENTS {
+        int id PK
+        string title
+        timestamp start_time
+        timestamp end_time
+    }
+    
+    STUDENTS {
+        string prn PK
+        string name
+        string email
+    }
+    
+    ATTENDANCE {
+        int id PK
+        int event_id FK
+        string student_prn FK
+        timestamp scanned_at
+    }
+    
+    FEEDBACK ||--|| EVENTS : "for event"
+    FEEDBACK ||--|| STUDENTS : "submitted by"
+    FEEDBACK ||--|| ATTENDANCE : "requires attendance"
+```
+
+**Email Request Template Flow:**
+```mermaid
+sequenceDiagram
+    participant API as Backend
+    participant EMAIL as Email Service
+    participant STUDENT as Student Email
+    
+    API->>EMAIL: send_feedback_request_email(<br/>  to_email="student@edu",<br/>  student_name="John Doe",<br/>  event_title="Workshop",<br/>  event_id=50,<br/>  student_prn="PRN001"<br/>)
+    
+    EMAIL->>EMAIL: Build HTML Template<br/>- Professional Header<br/>- Event Title<br/>- Personalized Greeting<br/>- Feedback Form Link<br/>- Call to Action Button
+    
+    EMAIL->>EMAIL: Compose SMTP Message<br/>- Subject: "Your Feedback Matters"<br/>- From: UniPass System<br/>- Reply-To: support@<br/>- HTML + Plain Text
+    
+    EMAIL->>STUDENT: Send Email via SMTP
+    
+    alt Email Success
+        STUDENT-->>EMAIL: Delivered ✓
+        EMAIL-->>API: Success
+    else SMTP Error
+        STUDENT-->>EMAIL: Bounced ✗
+        EMAIL-->>API: Failed (logged)
+    end
+```
+
+---
+
+## 15. Feedback Eligibility & AI Sentiment Analysis
+
+**Purpose:** Validate submission eligibility and analyze feedback sentiment using AI.
+
+**Innovation:** Dual validation (attendance + duplicate check) with real-time AI sentiment scoring.
+
+```mermaid
+sequenceDiagram
+    participant FORM as Feedback Form
+    participant API as Backend API
+    participant DB as Database
+    participant AI as OpenAI GPT-4
+    
+    Note over FORM: Student Clicks<br/>Feedback Link
+    
+    FORM->>API: GET /feedback/check-eligibility/<br/>{event_id}/{student_prn}
+    
+    API->>DB: SELECT * FROM events<br/>WHERE id = {event_id}
+    DB-->>API: Event Details
+    
+    API->>DB: SELECT * FROM attendance<br/>WHERE event_id = {event_id}<br/>AND student_prn = {student_prn}
+    
+    alt Not Attended
+        DB-->>API: No Record Found
+        API-->>FORM: {<br/>  eligible: false,<br/>  attended: false,<br/>  message: "Must attend event"<br/>}
+        FORM->>FORM: Show Error:<br/>"You cannot submit feedback.<br/>You did not attend this event."
+    else Attended
+        DB-->>API: Attendance Record Found
+        
+        API->>DB: SELECT * FROM feedback<br/>WHERE event_id = {event_id}<br/>AND student_prn = {student_prn}
+        
+        alt Already Submitted
+            DB-->>API: Feedback Exists
+            API-->>FORM: {<br/>  eligible: false,<br/>  attended: true,<br/>  already_submitted: true<br/>}
+            FORM->>FORM: Show Info:<br/>"You already submitted<br/>feedback for this event."
+        else Eligible
+            DB-->>API: No Feedback Found
+            API-->>FORM: {<br/>  eligible: true,<br/>  attended: true,<br/>  event_name: "Workshop"<br/>}
+            FORM->>FORM: Enable Form Fields
+        end
+    end
+    
+    Note over FORM: Student Fills Form<br/>& Submits
+    
+    FORM->>API: POST /feedback/submit<br/>{<br/>  event_id, student_prn,<br/>  ratings: {1-5},<br/>  text_responses,<br/>  would_recommend: bool<br/>}
+    
+    API->>API: Calculate Average Rating<br/>avg = (overall + content +<br/>organization + venue) / 4
+    
+    alt High Rating (>= 4.0)
+        API->>API: sentiment_score = 1<br/>(Positive)
+    else Medium Rating (>= 3.0)
+        API->>API: sentiment_score = 0<br/>(Neutral)
+    else Low Rating (< 3.0)
+        API->>API: sentiment_score = -1<br/>(Negative)
+    end
+    
+    API->>AI: [OPTIONAL] Enhance Analysis<br/>analyze_sentiment(<br/>  text=combined_feedback,<br/>  ratings=rating_dict<br/>)
+    
+    AI-->>API: {<br/>  sentiment: "positive",<br/>  confidence: 0.92,<br/>  summary: "Student enjoyed...",<br/>  topics: ["content", "speaker"]<br/>}
+    
+    API->>DB: INSERT INTO feedback<br/>VALUES (all_fields +<br/>sentiment_score +<br/>ai_summary)
+    DB-->>API: Feedback Saved
+    
+    API-->>FORM: 200 OK<br/>"Thank you for your feedback!"
+```
+
+**Sentiment Analysis Decision Tree:**
+```mermaid
+graph TD
+    START[Feedback Submitted] --> CALC_AVG[Calculate Average<br/>Rating Score]
+    
+    CALC_AVG --> CHECK{Average<br/>Score?}
+    
+    CHECK -->|>= 4.0| HIGH[High Satisfaction]
+    CHECK -->|3.0 - 3.9| MED[Medium Satisfaction]
+    CHECK -->|< 3.0| LOW[Low Satisfaction]
+    
+    HIGH --> POS[sentiment_score = 1<br/>Status: POSITIVE]
+    MED --> NEU[sentiment_score = 0<br/>Status: NEUTRAL]
+    LOW --> NEG[sentiment_score = -1<br/>Status: NEGATIVE]
+    
+    POS --> AI_CHECK{AI Service<br/>Available?}
+    NEU --> AI_CHECK
+    NEG --> AI_CHECK
+    
+    AI_CHECK -->|Yes| GPT[OpenAI GPT-4<br/>Text Analysis]
+    AI_CHECK -->|No| BASIC[Use Basic<br/>Sentiment Only]
+    
+    GPT --> ENHANCE[Enhanced Sentiment<br/>+ AI Summary<br/>+ Topic Extraction]
+    
+    ENHANCE --> SAVE[(Save to Database)]
+    BASIC --> SAVE
+    
+    SAVE --> NOTIFY[Notify Organizer<br/>via Dashboard]
+    
+    style POS fill:#d1fae5,color:#065f46
+    style NEU fill:#fef3c7,color:#92400e
+    style NEG fill:#fee2e2,color:#991b1b
+    style GPT fill:#ffe66d
+```
+
+**AI Service Integration (Optional Enhancement):**
+```python
+# Graceful Degradation Pattern
+def analyze_feedback(feedback_text, ratings):
+    """
+    AI sentiment analysis with graceful degradation.
+    System works perfectly without AI, but enhances with it.
+    """
+    # Basic sentiment from ratings (always works)
+    avg_rating = sum(ratings.values()) / len(ratings)
+    basic_sentiment = 1 if avg_rating >= 4 else (0 if avg_rating >= 3 else -1)
+    
+    # Try AI enhancement (optional)
+    try:
+        if openai_api_key_configured():
+            ai_result = openai.ChatCompletion.create(
+                model="gpt-4",
+                messages=[{
+                    "role": "system",
+                    "content": "Analyze this event feedback sentiment."
+                }, {
+                    "role": "user",
+                    "content": f"Ratings: {ratings}\nFeedback: {feedback_text}"
+                }]
+            )
+            return {
+                "sentiment_score": basic_sentiment,
+                "ai_summary": ai_result['choices'][0]['message']['content'],
+                "ai_confidence": 0.95
+            }
+    except Exception as e:
+        # Graceful fallback to basic sentiment
+        logging.warning(f"AI analysis unavailable: {e}")
+    
+    return {
+        "sentiment_score": basic_sentiment,
+        "ai_summary": None,
+        "ai_confidence": None
+    }
+```
+
+**Analytics Aggregation Query:**
+```sql
+-- Feedback summary for event
+SELECT 
+    event_id,
+    COUNT(*) as total_responses,
+    ROUND(AVG(overall_rating), 2) as avg_overall,
+    ROUND(AVG(content_quality), 2) as avg_content,
+    ROUND(AVG(organization_rating), 2) as avg_organization,
+    ROUND(AVG(venue_rating), 2) as avg_venue,
+    ROUND(AVG(speaker_rating), 2) as avg_speaker,
+    ROUND(100.0 * SUM(CASE WHEN would_recommend THEN 1 ELSE 0 END) / COUNT(*), 1) 
+        as recommendation_percentage,
+    SUM(CASE WHEN sentiment_score = 1 THEN 1 ELSE 0 END) as sentiment_positive,
+    SUM(CASE WHEN sentiment_score = 0 THEN 1 ELSE 0 END) as sentiment_neutral,
+    SUM(CASE WHEN sentiment_score = -1 THEN 1 ELSE 0 END) as sentiment_negative
+FROM feedback
+WHERE event_id = ?
+GROUP BY event_id;
+```
+
+---
+
+## 16. Feedback Modal UI Component Architecture
+
+**Purpose:** Interactive frontend component for viewing feedback with summary analytics and individual responses.
+
+**Innovation:** Real-time sentiment visualization with professional icon-based UI and dual-tab interface.
+
+```mermaid
+graph TB
+    subgraph "COMPONENT HIERARCHY"
+        EVENT[Event Modal<br/>Main Control Center] --> FB_BTN[View Feedback Button<br/>Cyan Gradient]
+        FB_BTN --> FB_MODAL[FeedbackModal Component]
+        
+        FB_MODAL --> STATE[React State Management]
+        STATE --> LOADING[loading: boolean]
+        STATE --> SUMMARY[summary: FeedbackSummary]
+        STATE --> RESPONSES[feedbackList: Array]
+        STATE --> TAB[activeTab: summary/responses]
+        STATE --> INITIAL[isInitialLoad: boolean]
+    end
+    
+    subgraph "DATA FETCHING"
+        FB_MODAL --> FETCH[fetchFeedbackData()]
+        FETCH --> API1[GET /feedback/event/{id}/summary]
+        FETCH --> API2[GET /feedback/event/{id}]
+        
+        API1 --> PARSE1[Parse Summary Data<br/>- Total Responses<br/>- Avg Ratings<br/>- Sentiment Counts<br/>- Recommendation %]
+        
+        API2 --> PARSE2[Parse Individual Responses<br/>- Student Names<br/>- All Ratings<br/>- Text Feedback<br/>- Sentiment Score<br/>- Timestamps]
+    end
+    
+    subgraph "UI RENDERING"
+        PARSE1 --> TABS[Tab Navigation]
+        PARSE2 --> TABS
+        
+        TABS --> SUMMARY_TAB[Summary Tab<br/>Grid Icon]
+        TABS --> RESP_TAB[Responses Tab<br/>Message Icon]
+        
+        SUMMARY_TAB --> GRID[Summary Grid<br/>2-Column Layout]
+        GRID --> CARD1[Total Responses Card<br/>Users Icon<br/>Indigo Gradient]
+        GRID --> CARD2[Would Recommend Card<br/>Thumbs Up Icon<br/>Indigo Gradient]
+        GRID --> CARD3[Overall Rating<br/>5 Stars + Score]
+        GRID --> CARD4[Content Quality<br/>5 Stars + Score]
+        GRID --> CARD5[Organization<br/>5 Stars + Score]
+        GRID --> CARD6[Venue<br/>5 Stars + Score]
+        GRID --> CARD7[Speaker<br/>5 Stars + Score]
+        
+        SUMMARY_TAB --> SENT_SECTION[Sentiment Analysis Section]
+        SENT_SECTION --> SENT_BAR1[Positive Bar<br/>Smile Icon<br/>Mint Background<br/>Green Gradient]
+        SENT_SECTION --> SENT_BAR2[Neutral Bar<br/>Neutral Icon<br/>Yellow Background<br/>Amber Gradient]
+        SENT_SECTION --> SENT_BAR3[Negative Bar<br/>Frown Icon<br/>Red Background<br/>Red Gradient]
+        
+        RESP_TAB --> RESP_LIST[Responses List<br/>Flex Column]
+        RESP_LIST --> RESP_CARD[Individual Response Card]
+        RESP_CARD --> STUDENT_INFO[Student Name + PRN]
+        RESP_CARD --> SENTIMENT_BADGE[Sentiment Badge<br/>Positive/Neutral/Negative]
+        RESP_CARD --> RATINGS_GRID[5 Rating Categories<br/>Star Display]
+        RESP_CARD --> TEXT_SECTION[Text Feedback<br/>- What Liked<br/>- What Improve<br/>- Additional Comments]
+        RESP_CARD --> REC_BADGE[Recommendation Badge<br/>✓ or ✗]
+    end
+    
+    subgraph "EMPTY STATE HANDLING"
+        PARSE1 --> CHECK{total_responses<br/>== 0?}
+        CHECK -->|Yes| EMPTY[Empty State UI<br/>- Chat Icon<br/>- "No Feedback Yet"<br/>- Explanation Text<br/>- Refresh Button]
+        CHECK -->|No| TABS
+    end
+    
+    subgraph "LOADING STATES"
+        FETCH --> LOADING_UI[Loading State<br/>Spinner + Message]
+        FETCH --> REFRESH_OVERLAY[Refresh Overlay<br/>Semi-transparent<br/>with Spinner]
+    end
+    
+    style FB_MODAL fill:#6366f1,color:#fff
+    style SENT_BAR1 fill:#ecfdf5,color:#065f46
+    style SENT_BAR2 fill:#fef3c7,color:#92400e
+    style SENT_BAR3 fill:#fef2f2,color:#991b1b
+    style CARD1 fill:#6366f1,color:#fff
+    style CARD2 fill:#6366f1,color:#fff
+```
+
+**Component Props & State Flow:**
+```typescript
+// FeedbackModal.tsx Type Definitions
+
+interface Props {
+  eventId: number;
+  eventTitle: string;
+  onClose: () => void;
+}
+
+interface FeedbackSummary {
+  event_id: number;
+  total_responses: number;
+  avg_overall_rating: number;
+  avg_content_quality: number;
+  avg_organization: number;
+  avg_venue: number;
+  avg_speaker?: number;
+  recommendation_percentage: number;
+  sentiment_positive: number;
+  sentiment_neutral: number;
+  sentiment_negative: number;
+}
+
+interface FeedbackItem {
+  id: number;
+  student_prn: string;
+  student_name?: string;
+  overall_rating: number;
+  content_quality: number;
+  organization_rating: number;
+  venue_rating: number;
+  speaker_rating?: number;
+  what_liked: string;
+  what_improve: string;
+  additional_comments: string;
+  would_recommend: boolean;
+  sentiment_score: number;  // -1, 0, 1
+  submitted_at: string;
+}
+```
+
+**SCSS Architecture (Subtle Aesthetic Design):**
+```mermaid
+graph LR
+    ROOT[feedback-modal.scss] --> MODAL[.feedback-modal]
+    
+    MODAL --> CLOSE[.close-btn<br/>Rounded Gray Button<br/>Hover: Scale Effect]
+    MODAL --> HEADER[.modal-header<br/>Flexbox Layout<br/>With Refresh Button]
+    MODAL --> TABS[.feedback-tabs<br/>Border Bottom<br/>Icon + Text]
+    
+    TABS --> TAB_ITEM[.tab<br/>- Inactive: Gray<br/>- Active: Indigo<br/>- Hover: Light Gray BG]
+    
+    MODAL --> SUMMARY_CONTENT[.feedback-summary-content]
+    SUMMARY_CONTENT --> GRID_LAYOUT[.summary-grid<br/>Auto-fit Columns<br/>280px Min Width]
+    
+    GRID_LAYOUT --> CARD[.summary-card<br/>- White BG<br/>- 1px Border<br/>- Hover: Lift + Shadow]
+    CARD --> HIGHLIGHT[.highlight<br/>Indigo Gradient<br/>White Text<br/>SVG Icons]
+    
+    SUMMARY_CONTENT --> SENT_ANALYSIS[.sentiment-analysis<br/>Slate Background<br/>Soft Border]
+    SENT_ANALYSIS --> SENT_BARS[.sentiment-bars<br/>Flex Column<br/>1.5rem Gap]
+    
+    SENT_BARS --> BAR_ITEM[.sentiment-bar<br/>Flexbox Layout]
+    BAR_ITEM --> BAR_LABEL[.bar-label<br/>Icon + Text<br/>Icon in Rounded Box]
+    BAR_ITEM --> BAR_WRAPPER[.bar-wrapper<br/>Rounded Pill<br/>Slate Background]
+    BAR_WRAPPER --> BAR_FILL[.bar<br/>Animated Width<br/>Cubic Bezier Easing<br/>Gradient Fill]
+    
+    MODAL --> RESP_CONTENT[.feedback-responses-content]
+    RESP_CONTENT --> RESP_ITEM[.feedback-item<br/>White Card<br/>1px Border<br/>Hover: Border Change]
+    
+    RESP_ITEM --> FB_HEADER[.feedback-header<br/>Student + Sentiment Badge]
+    RESP_ITEM --> FB_RATINGS[.feedback-ratings<br/>Grid Layout<br/>Star Displays]
+    RESP_ITEM --> FB_TEXT[.feedback-text<br/>Text Sections<br/>H4 + Paragraphs]
+    RESP_ITEM --> FB_FOOTER[.feedback-footer<br/>Recommendation Badge]
+    
+    MODAL --> EMPTY_STATE[.empty-state<br/>Centered Layout<br/>SVG Icon<br/>Help Text<br/>Refresh Button]
+    
+    MODAL --> LOADING_STATE[.loading-state<br/>Spinner Animation<br/>Centered Text]
+    
+    MODAL --> LOADING_OVERLAY[.loading-overlay<br/>Absolute Position<br/>Blur Backdrop<br/>Semi-transparent]
+    
+    style HIGHLIGHT fill:#6366f1,color:#fff
+    style BAR_FILL fill:#10b981
+    style SENT_ANALYSIS fill:#f8fafc
+```
+
+**Color Palette (Subtle & Professional):**
+```scss
+// Primary Colors
+$indigo-600: #6366f1;     // Main accent (tabs, buttons, gradients)
+$purple-600: #8b5cf6;     // Secondary accent
+
+// Sentiment Colors  
+$green-50: #ecfdf5;       // Positive background
+$green-600: #10b981;      // Positive bar
+$yellow-50: #fef3c7;      // Neutral background
+$amber-600: #f59e0b;      // Neutral bar
+$red-50: #fef2f2;         // Negative background
+$red-600: #ef4444;        // Negative bar
+
+// Neutral Grays
+$slate-50: #f8fafc;       // Section backgrounds
+$slate-200: #e2e8f0;      // Borders, bar backgrounds
+$slate-400: #94a3b8;      // Secondary text
+$slate-600: #475569;      // Primary text
+$slate-700: #334155;      // Headings
+
+// Interaction States
+$hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);  // Subtle lift
+$active-border: #cbd5e1;                         // Hover border color
+```
+
+**Component Lifecycle:**
+```mermaid
+stateDiagram-v2
+    [*] --> Mounted: Component Created
+    
+    Mounted --> FetchingData: useEffect Triggered
+    FetchingData --> Loading: Set loading=true
+    
+    Loading --> APICall: Promise.all([summary, responses])
+    
+    APICall --> Success: Both APIs Return 200
+    APICall --> Error: API Error or Network Fail
+    
+    Success --> CheckEmpty: Check total_responses
+    CheckEmpty --> ShowEmpty: responses == 0
+    CheckEmpty --> ShowData: responses > 0
+    
+    ShowEmpty --> DisplayEmpty: Empty State UI
+    ShowData --> DisplayTabs: Tab Navigation + Data
+    
+    DisplayTabs --> SummaryTab: Default Active Tab
+    DisplayTabs --> ResponsesTab: User Clicks Tab
+    
+    SummaryTab --> ShowCards: Render Summary Grid
+    SummaryTab --> ShowSentiment: Render Sentiment Bars
+    
+    ResponsesTab --> ShowList: Render Response Cards
+    
+    DisplayEmpty --> UserRefresh: User Clicks Refresh
+    ShowCards --> UserRefresh
+    ShowList --> UserRefresh
+    
+    UserRefresh --> RefreshAPI: fetchFeedbackData()
+    RefreshAPI --> ShowOverlay: loading=true (not initial)
+    ShowOverlay --> APICall
+    
+    Error --> ShowError: Toast Error Message
+    ShowError --> DisplayEmpty
+    
+    ShowCards --> UserClose: User Clicks Close
+    ShowList --> UserClose
+    DisplayEmpty --> UserClose
+    
+    UserClose --> [*]: Component Unmounted
+```
+
+**Key UI/UX Features:**
+1. **Icon-Based Design**: SVG icons instead of emojis for professional look
+2. **Subtle Color Palette**: Soft indigo/slate colors instead of harsh purple/pink
+3. **Smooth Animations**: Cubic-bezier easing for sentiment bars
+4. **Loading States**: Both initial loading and refresh overlay
+5. **Empty State**: Helpful message with refresh button
+6. **Responsive Grid**: Auto-fit columns with 280px minimum width
+7. **Hover Effects**: Subtle lift and shadow on cards
+8. **Sentiment Icons**: Rounded rectangles with pastel backgrounds
+9. **Tab Icons**: Professional SVG icons (grid, message bubble)
+10. **Accessibility**: Proper semantic HTML and ARIA labels
+
+---
+
 ## Document Metadata
 
-**Last Updated:** February 6, 2026  
-**Version:** 2.1 (Updated with latest system changes and full_name field)  
+**Last Updated:** February 8, 2026  
+**Version:** 3.0 (Added Certificate & Feedback Systems)  
 **Author:** Samarth Patil  
 **Document Purpose:** Comprehensive visual documentation for research paper / technical presentation  
 **Format:** Mermaid diagrams (VS Code, GitHub, exportable to PNG/SVG)  
 **Compatibility:** IEEE / Springer / ACM formatting standards  
 
-**Sections:** 12 comprehensive diagrams covering:
+**Sections:** 16 comprehensive diagrams covering:
 - Core architecture and data flow
 - Security protocols and validation
 - Enterprise governance and audit trails
 - Professional reporting and exports
 - Infrastructure and scalability
 - AI/ML pipeline integration
+- Certificate generation and distribution
+- Feedback collection with AI sentiment analysis
+- Frontend UI component architecture
+
+**New Features Documented (v3.0):**
+1. **Certificate System**: JWT-verified PDF certificates with QR verification codes
+2. **Feedback Collection**: Attendance-validated feedback with eligibility checks
+3. **AI Sentiment Analysis**: GPT-4 powered sentiment scoring with graceful degradation
+4. **Feedback Modal UI**: Professional React component with dual-tab interface
+5. **Email Templates**: Professional HTML emails for certificates and feedback requests
+6. **Bulk Operations**: Automated certificate distribution and feedback email campaigns
 
 **Usage:**
 1. **Research Papers**: Use diagrams in methodology/architecture sections
@@ -2334,6 +3029,22 @@ graph TB
 ---
 
 **End of Diagrams Document**  
-**Status:** Complete and Up-to-Date with All System Features (Feb 6, 2026)  
-**Aligned With:** UNIPASS_SYSTEM_OVERVIEW.md v2.0  
-**Next Update:** After Phase 4 (AI Implementation) or Production Deployment
+**Status:** Complete and Up-to-Date with All System Features (Feb 8, 2026)  
+**Aligned With:** UNIPASS_SYSTEM_OVERVIEW.md v3.0  
+**Next Update:** After Phase 8 (AI Implementation) or Production Deployment
+
+**Recent Additions:**
+- Section 13: Certificate Generation & Distribution System
+- Section 14: Feedback Collection System Architecture  
+- Section 15: Feedback Eligibility & AI Sentiment Analysis
+- Section 16: Feedback Modal UI Component Architecture
+
+**System Completeness:**
+✅ Event Management (Registration, Ticketing, Scanning)  
+✅ Certificate Generation & Distribution  
+✅ Feedback Collection with AI Sentiment Analysis  
+✅ Security (JWT, RBAC, Audit Logging)  
+✅ Analytics & Reporting  
+✅ Email Automation  
+✅ Admin Governance & Override Mode  
+✅ Frontend UI Components (16 diagrams total)
