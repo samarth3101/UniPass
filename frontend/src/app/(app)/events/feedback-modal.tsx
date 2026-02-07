@@ -47,6 +47,7 @@ export default function FeedbackModal({ eventId, eventTitle, onClose }: Props) {
   const [summary, setSummary] = useState<FeedbackSummary | null>(null);
   const [feedbackList, setFeedbackList] = useState<FeedbackItem[]>([]);
   const [activeTab, setActiveTab] = useState<"summary" | "responses">("summary");
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   useEffect(() => {
     fetchFeedbackData();
@@ -61,31 +62,40 @@ export default function FeedbackModal({ eventId, eventTitle, onClose }: Props) {
       ]);
       setSummary(summaryData);
       setFeedbackList(responsesData);
-    } catch (error: any) {
-      console.error("Failed to fetch feedback:", error);
       
-      // Handle "no feedback yet" gracefully
-      const errorMessage = error.message || error.response?.data?.detail || "Failed to load feedback data";
-      
-      if (errorMessage.toLowerCase().includes("no feedback") || 
-          errorMessage.toLowerCase().includes("not found")) {
+      // Show info toast only when manually refreshing (not on initial load)
+      if (!isInitialLoad && summaryData.total_responses === 0) {
         toast.info("No feedback submitted yet. Check back later!");
-        // Set empty data to show the empty state UI
-        setSummary({
-          event_id: eventId,
-          total_responses: 0,
-          avg_overall_rating: 0,
-          avg_content_quality: 0,
-          avg_organization: 0,
-          avg_venue: 0,
-          recommendation_percentage: 0,
-          sentiment_positive: 0,
-          sentiment_neutral: 0,
-          sentiment_negative: 0,
-        });
-        setFeedbackList([]);
-      } else {
-        toast.error(errorMessage);
+      }
+      
+      // Mark initial load as complete
+      if (isInitialLoad) {
+        setIsInitialLoad(false);
+      }
+    } catch (error: any) {
+      // Handle actual errors (event not found, access denied, etc.)
+      console.error("Failed to fetch feedback:", error);
+      const errorMessage = error.message || "Failed to load feedback data";
+      toast.error(errorMessage);
+      
+      // Set empty state on error
+      setSummary({
+        event_id: eventId,
+        total_responses: 0,
+        avg_overall_rating: 0,
+        avg_content_quality: 0,
+        avg_organization: 0,
+        avg_venue: 0,
+        recommendation_percentage: 0,
+        sentiment_positive: 0,
+        sentiment_neutral: 0,
+        sentiment_negative: 0,
+      });
+      setFeedbackList([]);
+      
+      // Mark initial load as complete even on error
+      if (isInitialLoad) {
+        setIsInitialLoad(false);
       }
     } finally {
       setLoading(false);

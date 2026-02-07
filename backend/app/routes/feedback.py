@@ -188,6 +188,7 @@ def get_feedback_summary(
     """
     Get aggregated feedback summary for an event.
     Organizers can only view their own events, admins can view all.
+    Returns empty summary if no feedback submitted yet.
     """
     # Verify event exists
     event = db.query(Event).filter(Event.id == event_id).first()
@@ -201,8 +202,21 @@ def get_feedback_summary(
     # Get all feedback for event
     feedbacks = db.query(Feedback).filter(Feedback.event_id == event_id).all()
     
+    # Return empty summary if no feedback (not an error)
     if not feedbacks:
-        raise HTTPException(status_code=404, detail="No feedback submitted yet")
+        return FeedbackSummary(
+            event_id=event_id,
+            total_responses=0,
+            avg_overall_rating=0.0,
+            avg_content_quality=0.0,
+            avg_organization=0.0,
+            avg_venue=0.0,
+            avg_speaker=None,
+            recommendation_percentage=0.0,
+            sentiment_positive=0,
+            sentiment_neutral=0,
+            sentiment_negative=0
+        )
     
     total = len(feedbacks)
     
@@ -248,6 +262,8 @@ def get_event_feedback(
 ):
     """
     Get all feedback submissions for an event with student names.
+    Returns empty list if no feedback submitted yet.
+    """
     """
     # Verify event exists
     event = db.query(Event).filter(Event.id == event_id).first()
