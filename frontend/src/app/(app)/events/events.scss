@@ -248,8 +248,15 @@
   border: 1px solid #e5e9f2;
 
   .empty-icon {
-    font-size: 64px;
     margin-bottom: 16px;
+    color: #94a3b8;
+    display: flex;
+    justify-content: center;
+    
+    svg {
+      width: 64px;
+      height: 64px;
+    }
   }
 
   h3 {

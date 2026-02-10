@@ -10,12 +10,17 @@ class Event(Base):
     title = Column(String, index=True)
     description = Column(String)
     location = Column(String)
-    start_time = Column(DateTime)
+    start_time = Column(DateTime, index=True)  # Indexed for AI time-based queries
     end_time = Column(DateTime)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     created_by = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)  # Track event creator
     
     share_slug = Column(String, unique=True, index=True, nullable=False)
+    
+    # AI Readiness Phase 0 fields
+    event_type = Column(String, nullable=True, index=True)  # workshop, seminar, hackathon, etc.
+    capacity = Column(Integer, nullable=True)  # Max attendees for attendance rate calculations
+    department = Column(String, nullable=True, index=True)  # CS, IT, ENTC, etc.
     
     # Relationship to User
     creator = relationship("User", foreign_keys=[created_by])

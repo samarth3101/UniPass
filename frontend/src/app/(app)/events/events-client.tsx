@@ -114,7 +114,14 @@ export default function EventsClient({ events, onRefresh }: Props) {
         </div>
       ) : (
         <div className="empty-state">
-          <div className="empty-icon">📅</div>
+          <div className="empty-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2"/>
+              <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" strokeWidth="2"/>
+            </svg>
+          </div>
           <h3>No events found</h3>
           <p>
             {searchQuery || filterStatus !== "all"

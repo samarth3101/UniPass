@@ -29,6 +29,7 @@ from app.routes.students import router as students_router
 from app.routes.organizers import router as organizers_router
 from app.routes.certificates import router as certificates_router
 from app.routes.feedback import router as feedback_router
+from app.routes.analytics import router as analytics_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -66,6 +67,7 @@ app.include_router(students_router)
 app.include_router(organizers_router)
 app.include_router(certificates_router)
 app.include_router(feedback_router)
+app.include_router(analytics_router)
 
 @app.get("/")
 def root():

@@ -4,3 +4,5 @@ from app.models.attendance import Attendance
 from app.models.audit_log import AuditLog
 from app.models.certificate import Certificate
 from app.models.feedback import Feedback
+from app.models.student import Student
+from app.models.user import User, UserRole
