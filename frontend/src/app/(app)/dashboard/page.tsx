@@ -236,7 +236,12 @@ export default function DashboardPage() {
             {upcomingEvents.length > 0 ? (
               upcomingEvents.map((event) => {
                 const startDate = new Date(event.start_time);
-                const daysUntil = Math.ceil((startDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                const now = new Date();
+                
+                // Compare dates without time to fix "tomorrow" bug
+                const eventDay = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const daysUntil = Math.round((eventDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
                 
                 return (
                   <div key={event.id} className="upcoming-event-item">

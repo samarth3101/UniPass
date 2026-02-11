@@ -22,3 +22,4 @@ reportlab==4.4.9
 python-multipart==0.0.22
 sse-starlette==2.3.0
 slowapi==0.1.9
+pandas==2.2.1

@@ -29,6 +29,10 @@ export default function Topbar() {
     if (pathname === '/dashboard') return 'Dashboard';
     if (pathname === '/events') return 'Events';
     if (pathname === '/attendance') return 'Attendance';
+    if (pathname === '/analytics') return 'Analytics';
+    if (pathname === '/organizers') return 'Organizers';
+    if (pathname === '/scanners') return 'Scanners';
+    if (pathname === '/students') return 'Students';
     if (pathname === '/scan') return 'Scan';
     return 'Dashboard';
   };
