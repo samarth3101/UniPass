@@ -138,3 +138,68 @@ def get_student_analytics(
         "registered_events": registered_events,
         "monthly_stats": monthly_stats,
     }
+
+
+@router.get("/{prn}/event/{event_id}/attendance-status")
+def get_student_event_attendance_status(
+    prn: str,
+    event_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Public endpoint to check student's attendance status for a specific event.
+    Returns:
+    - Total days for the event
+    - Days attended by student
+    - Days remaining
+    - Whether certificate is unlocked
+    - Whether feedback is unlocked
+    - List of days attended with timestamps
+    """
+    # Get event
+    event = db.query(Event).filter(Event.id == event_id).first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    
+    # Get total days
+    total_days = event.total_days or 1
+    
+    # Get all attendance records for this student and event
+    attendance_records = db.query(Attendance).filter(
+        Attendance.event_id == event_id,
+        Attendance.student_prn == prn
+    ).order_by(Attendance.day_number).all()
+    
+    # Count distinct days attended
+    attended_days_count = db.query(
+        func.count(func.distinct(Attendance.day_number))
+    ).filter(
+        Attendance.event_id == event_id,
+        Attendance.student_prn == prn
+    ).scalar()
+    
+    # Check if fully attended
+    is_fully_attended = (attended_days_count >= total_days)
+    
+    # Format attendance details
+    days_attended = [
+        {
+            "day_number": att.day_number,
+            "scanned_at": att.scanned_at.isoformat() if att.scanned_at else None
+        }
+        for att in attendance_records
+    ]
+    
+    return {
+        "event_id": event_id,
+        "event_title": event.title,
+        "student_prn": prn,
+        "total_days": total_days,
+        "attended_days": attended_days_count or 0,
+        "days_remaining": max(0, total_days - (attended_days_count or 0)),
+        "certificate_unlocked": is_fully_attended,
+        "feedback_unlocked": is_fully_attended,
+        "is_fully_attended": is_fully_attended,
+        "days_attended_details": days_attended,
+        "progress_percentage": round((attended_days_count or 0) / total_days * 100, 1) if total_days > 0 else 0
+    }

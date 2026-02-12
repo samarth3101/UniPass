@@ -19,6 +19,9 @@ class Attendance(Base):
     student_prn = Column(String, index=True)
     scanned_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)  # Indexed for time analysis
     
+    # Multi-Day Event Support
+    day_number = Column(Integer, nullable=True)  # Which day of the event (1, 2, 3, etc.)
+    
     # AI Readiness Phase 0 fields - Scan tracking for data quality
     # Use native=False to store as VARCHAR instead of PostgreSQL enum
     scan_source = Column(String, default="qr_scan", nullable=False)

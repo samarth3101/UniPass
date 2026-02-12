@@ -54,34 +54,77 @@ def scan_qr(
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
     
+    # Calculate current event day (for multi-day events)
+    # event.start_time is Day 1
+    from datetime import date
+    today = date.today()
+    event_start_date = event.start_time.date()
+    current_day = (today - event_start_date).days + 1
+    
+    # Get total days for the event (default: 1)
+    total_days = event.total_days or 1
+    
+    # Validate current day
+    if current_day <= 0:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Event '{event.title}' has not started yet. It begins on {event.start_time.strftime('%d %b %Y')}."
+        )
+    
+    if current_day > total_days:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Event '{event.title}' has already completed all {total_days} day(s). Attendance marking is closed."
+        )
+    
+    # Check for event end_time (optional secondary validation)
     if event.end_time and event.end_time < datetime.utcnow():
         raise HTTPException(
             status_code=403, 
             detail=f"Event '{event.title}' has already ended on {event.end_time.strftime('%d %b %Y, %I:%M %p')}. Attendance marking is closed. Contact admin for override."
         )
     
-    # Check if already attended (prevent duplicate scans)
+    # Check if already attended TODAY (prevent duplicate same-day scans)
     existing = db.query(Attendance).filter(
-        Attendance.ticket_id == ticket_id,
-        Attendance.event_id == event_id
+        Attendance.event_id == event_id,
+        Attendance.student_prn == student_prn,
+        Attendance.day_number == current_day
     ).first()
     
     if existing:
         # Get student info
         student = db.query(Student).filter(Student.prn == student_prn).first()
+        
+        # Calculate how many days attended so far
+        from sqlalchemy import func
+        attended_days = db.query(
+            func.count(func.distinct(Attendance.day_number))
+        ).filter(
+            Attendance.event_id == event_id,
+            Attendance.student_prn == student_prn
+        ).scalar()
+        
         return {
             "status": "already_scanned",
-            "message": f"Already marked present at {existing.scanned_at}",
+            "message": f"Already marked present for Day {current_day} at {existing.scanned_at.strftime('%I:%M %p')}",
             "attendance_id": existing.id,
             "student_name": student.name if student else "Unknown",
-            "scanned_at": existing.scanned_at.isoformat()
+            "scanned_at": existing.scanned_at.isoformat(),
+            "current_day": current_day,
+            "total_days": total_days,
+            "attended_days": attended_days,
+            "days_remaining": total_days - attended_days
         }
     
-    # Create new attendance record
+    # Create new attendance record with day_number
     attendance = Attendance(
         ticket_id=ticket_id,
         event_id=event_id,
-        student_prn=student_prn
+        student_prn=student_prn,
+        day_number=current_day,
+        scan_source="qr_scan",
+        scanner_id=current_user.id if current_user else None,
+        device_info=request.headers.get("User-Agent")
     )
 
     db.add(attendance)
@@ -90,6 +133,18 @@ def scan_qr(
     
     # Get student info
     student = db.query(Student).filter(Student.prn == student_prn).first()
+    
+    # Calculate how many days attended so far (including this scan)
+    from sqlalchemy import func
+    attended_days = db.query(
+        func.count(func.distinct(Attendance.day_number))
+    ).filter(
+        Attendance.event_id == event_id,
+        Attendance.student_prn == student_prn
+    ).scalar()
+    
+    # Determine if certificate and feedback are unlocked
+    is_fully_attended = (attended_days == total_days)
     
     # Audit log: QR code scanned
     create_audit_log(
@@ -100,7 +155,10 @@ def scan_qr(
         details={
             "student_prn": student_prn,
             "student_name": student.name if student else "Unknown",
-            "ticket_id": ticket_id
+            "ticket_id": ticket_id,
+            "day_number": current_day,
+            "attended_days": attended_days,
+            "total_days": total_days
         },
         ip_address=request.client.host if request.client else None
     )
@@ -110,15 +168,23 @@ def scan_qr(
         "type": "new_scan",
         "prn": student_prn,
         "name": student.name if student else "Unknown",
-        "time": attendance.scanned_at.strftime("%H:%M:%S")
+        "time": attendance.scanned_at.strftime("%H:%M:%S"),
+        "day": current_day
     })
 
     return {
         "status": "success",
-        "message": "Attendance marked successfully",
+        "message": f"Attendance marked for Day {current_day}/{total_days}",
         "attendance_id": attendance.id,
         "student_prn": student_prn,
         "student_name": student.name if student else "Unknown",
         "event_id": event_id,
-        "scanned_at": attendance.scanned_at.isoformat()
+        "scanned_at": attendance.scanned_at.isoformat(),
+        "current_day": current_day,
+        "total_days": total_days,
+        "attended_days": attended_days,
+        "days_remaining": total_days - attended_days,
+        "certificate_unlocked": is_fully_attended,
+        "feedback_unlocked": is_fully_attended,
+        "completion_message": "🎉 Congratulations! You attended all days. Certificate and feedback are now available!" if is_fully_attended else f"Keep going! {total_days - attended_days} more day(s) to unlock certificate."
     }

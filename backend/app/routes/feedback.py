@@ -30,8 +30,8 @@ def send_feedback_requests(
     current_user: User = Depends(require_organizer)
 ):
     """
-    Send feedback form links to all students who attended the event.
-    Only sends to students who actually scanned (not just registered).
+    Send feedback form links to all students who attended ALL DAYS of the event.
+    For multi-day events: only sends to students who completed full attendance.
     """
     # Verify event exists and user has access
     event = db.query(Event).filter(Event.id == event_id).first()
@@ -42,20 +42,35 @@ def send_feedback_requests(
     if current_user.role != "ADMIN" and event.created_by != current_user.id:
         raise HTTPException(status_code=403, detail="You can only send feedback for your own events")
     
-    # Get all students who actually attended (not just registered)
-    attended_students = db.query(Attendance).filter(
+    # Get total days required
+    total_days = event.total_days or 1
+    
+    # Find students who attended ALL required days
+    from sqlalchemy import func
+    fully_attended_students = db.query(
+        Attendance.student_prn,
+        func.count(func.distinct(Attendance.day_number)).label('days_attended')
+    ).filter(
         Attendance.event_id == event_id
+    ).group_by(
+        Attendance.student_prn
+    ).having(
+        func.count(func.distinct(Attendance.day_number)) >= total_days
     ).all()
     
-    if not attended_students:
-        raise HTTPException(status_code=400, detail="No students attended this event")
+    if not fully_attended_students:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"No students have completed all {total_days} day(s) of this event yet"
+        )
     
-    # Send emails to attended students
+    # Send emails to fully attended students
     sent_count = 0
     failed_count = 0
+    already_submitted = 0
     
-    for attendance in attended_students:
-        student = db.query(Student).filter(Student.prn == attendance.student_prn).first()
+    for record in fully_attended_students:
+        student = db.query(Student).filter(Student.prn == record.student_prn).first()
         
         if student and student.email:
             try:
@@ -66,6 +81,7 @@ def send_feedback_requests(
                 ).first()
                 
                 if existing_feedback:
+                    already_submitted += 1
                     continue  # Skip if already submitted
                 
                 send_feedback_request_email(
@@ -89,17 +105,20 @@ def send_feedback_requests(
         details={
             "sent_count": sent_count,
             "failed_count": failed_count,
-            "total_attended": len(attended_students)
+            "already_submitted": already_submitted,
+            "total_fully_attended": len(fully_attended_students),
+            "total_days_required": total_days
         },
         ip_address=request.client.host if request.client else None
     )
     
     return {
         "status": "success",
-        "total_attended": len(attended_students),
+        "total_fully_attended": len(fully_attended_students),
         "emails_sent": sent_count,
         "emails_failed": failed_count,
-        "already_submitted": len(attended_students) - sent_count - failed_count
+        "already_submitted": already_submitted,
+        "total_days_required": total_days
     }
 
 
@@ -110,23 +129,29 @@ def submit_feedback(
 ):
     """
     Public endpoint for students to submit feedback.
-    Validates that student actually attended the event.
+    Validates that student attended ALL DAYS of the event (for multi-day events).
     """
     # Verify event exists
     event = db.query(Event).filter(Event.id == feedback.event_id).first()
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
     
-    # Verify student attended the event (not just registered)
-    attendance = db.query(Attendance).filter(
+    # Get total days required
+    total_days = event.total_days or 1
+    
+    # Count how many distinct days student attended
+    attended_days = db.query(
+        func.count(func.distinct(Attendance.day_number))
+    ).filter(
         Attendance.event_id == feedback.event_id,
         Attendance.student_prn == feedback.student_prn
-    ).first()
+    ).scalar()
     
-    if not attendance:
+    # Verify student attended ALL days
+    if attended_days < total_days:
         raise HTTPException(
             status_code=403, 
-            detail="You cannot submit feedback. You must have attended the event."
+            detail=f"You cannot submit feedback yet. You must attend all {total_days} day(s) of the event. You have attended {attended_days} day(s) so far."
         )
     
     # Check if feedback already submitted

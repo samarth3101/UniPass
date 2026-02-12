@@ -9,6 +9,7 @@ class EventCreate(BaseModel):
     location: Optional[str] = None
     start_time: datetime
     end_time: datetime
+    total_days: Optional[int] = 1  # Number of days event spans (default: 1)
 
     @field_validator('start_time', 'end_time', mode='before')
     @classmethod
@@ -32,6 +33,7 @@ class EventResponse(BaseModel):
     end_time: datetime
     created_at: datetime
     share_slug: str
+    total_days: Optional[int] = 1  # Number of days event spans
 
     @field_serializer('created_at', 'start_time', 'end_time')
     def serialize_dt(self, dt: datetime, _info):

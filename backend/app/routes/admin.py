@@ -68,15 +68,9 @@ def get_all_scanners(
     
     result = []
     for scanner in scanners:
-        # Count total scans performed by this scanner
-        # Attendance records are created when scanners scan tickets
+        # Count total scans performed by this specific scanner
         scan_count = db.query(func.count(Attendance.id)).filter(
-            Attendance.id.in_(
-                db.query(Attendance.id).filter(
-                    # We need to track who scanned - for now use all attendance
-                    Attendance.id > 0
-                )
-            )
+            Attendance.scanner_id == scanner.id
         ).scalar() or 0
         
         result.append({
@@ -84,7 +78,7 @@ def get_all_scanners(
             "email": scanner.email,
             "full_name": scanner.full_name,
             "role": scanner.role.value,
-            "total_scans": scan_count,  # Will be properly implemented when scanner_id tracking is added
+            "total_scans": scan_count,
             "created_at": scanner.created_at if hasattr(scanner, 'created_at') else None,
         })
     
@@ -134,10 +128,10 @@ def get_scanner_analytics(
     if not scanner:
         raise HTTPException(status_code=404, detail="Scanner not found")
     
-    # Get all attendance records (representing scans)
-    # Note: In a production system, you'd track scanner_id in Attendance table
-    # For now, we'll show recent scans across all events
-    recent_scans = db.query(Attendance).order_by(
+    # Get all attendance records scanned by this specific scanner
+    recent_scans = db.query(Attendance).filter(
+        Attendance.scanner_id == scanner_id
+    ).order_by(
         Attendance.scanned_at.desc()
     ).limit(50).all()
     
