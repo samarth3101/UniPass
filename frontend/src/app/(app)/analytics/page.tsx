@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import "./analytics.scss";
 import api from "@/services/api";
+import HelpGuide, { getHelpContent } from "@/components/HelpGuide";
 
 interface DepartmentStats {
   branch: string;
@@ -44,6 +45,7 @@ interface Summary {
 }
 
 export default function DescriptiveAnalyticsPage() {
+  const helpContent = getHelpContent('descriptive-analytics');
   const [deptStats, setDeptStats] = useState<DepartmentStats[]>([]);
   const [timePatterns, setTimePatterns] = useState<TimePattern | null>(null);
   const [summary, setSummary] = useState<Summary | null>(null);
@@ -493,6 +495,9 @@ export default function DescriptiveAnalyticsPage() {
           {isRefreshing ? 'Refreshing...' : 'Refresh Analytics'}
         </button>
       </div>
+
+      {/* Help Guide */}
+      {helpContent && <HelpGuide content={helpContent} />}
     </div>
   );
 }

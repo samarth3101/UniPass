@@ -1,0 +1,122 @@
+.toast-notification {
+  position: fixed;
+  top: 5.5rem;
+  right: 2rem;
+  background: white;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  min-width: 320px;
+  max-width: 480px;
+  z-index: 10000;
+  border-left: 4px solid #fbbf24;
+  animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(100px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  &.toast-exit {
+    animation: slideOutRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  @keyframes slideOutRight {
+    from {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(100px);
+    }
+  }
+
+  .toast-icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    svg {
+      color: #f59e0b;
+      stroke-width: 2.5;
+    }
+  }
+
+  .toast-content {
+    flex: 1;
+    
+    .toast-message {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #2c3e50;
+      font-weight: 500;
+      line-height: 1.5;
+    }
+  }
+
+  .toast-close {
+    flex-shrink: 0;
+    background: transparent;
+    border: none;
+    color: #95a5a6;
+    font-size: 1.25rem;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    line-height: 1;
+    padding: 0;
+    
+    &:hover {
+      background: rgba(0, 0, 0, 0.05);
+      color: #2c3e50;
+    }
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .toast-notification {
+    top: 4.5rem;
+    right: 1rem;
+    left: 1rem;
+    min-width: unset;
+    max-width: unset;
+    padding: 0.875rem 1rem;
+
+    .toast-icon {
+      width: 36px;
+      height: 36px;
+
+      svg {
+        width: 18px;
+        height: 18px;
+      }
+    }
+
+    .toast-content {
+      .toast-message {
+        font-size: 0.85rem;
+      }
+    }
+  }
+}

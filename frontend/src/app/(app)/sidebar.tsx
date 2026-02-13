@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { getUser, logout } from "@/lib/auth";
+import { useState } from "react";
 import "./sidebar.scss";
 
 export default function Sidebar() {
@@ -11,6 +12,24 @@ export default function Sidebar() {
   const user = getUser();
   // Normalize role to lowercase for consistent comparison
   const role = user?.role?.toLowerCase() || "scanner";
+  const [expandedItems, setExpandedItems] = useState<string[]>(["/analytics"]);
+
+  const toggleExpand = (href: string) => {
+    setExpandedItems((prev) =>
+      prev.includes(href) ? prev.filter((h) => h !== href) : [...prev, href]
+    );
+  };
+
+  const renderLabel = (label: string, isAI: boolean = false) => {
+    if (isAI && label === "Cortex AI") {
+      return (
+        <>
+          Cortex <span style={{ color: '#6366f1', fontWeight: 600 }}>AI</span>
+        </>
+      );
+    }
+    return label;
+  };
 
   const handleLogout = () => {
     logout();
@@ -57,16 +76,26 @@ export default function Sidebar() {
       roles: ["admin", "organizer"],
     },
     {
-      label: "Analytics",
+      label: "Cortex AI",
       href: "/analytics",
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="12" y1="20" x2="12" y2="10"/>
-          <line x1="18" y1="20" x2="18" y2="4"/>
-          <line x1="6" y1="20" x2="6" y2="16"/>
+          <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Z"/>
+          <path d="M12 6v12"/>
+          <path d="M6 12h12"/>
+          <circle cx="12" cy="12" r="2"/>
+          <path d="M8 8l-1.5-1.5"/>
+          <path d="M16 8l1.5-1.5"/>
+          <path d="M8 16l-1.5 1.5"/>
+          <path d="M16 16l1.5 1.5"/>
         </svg>
       ),
       roles: ["admin", "organizer"],
+      isAI: true,
+      subItems: [
+        { label: "Anomaly Detection", href: "/analytics/anomaly" },
+        { label: "Prediction Model", href: "/analytics/prediction", disabled: true },
+      ],
     },
     {
       label: "Organizers",
@@ -127,19 +156,61 @@ export default function Sidebar() {
     <aside className="sidebar">
       <div className="logo-section">
         <h2 className="logo">UniPass</h2>
-        <span className="role-badge role-{role}">{role}</span>
       </div>
 
       <nav>
         {visibleItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={pathname === item.href ? "active" : ""}
-          >
-            <span className="icon">{item.icon}</span>
-            <span className="label">{item.label}</span>
-          </Link>
+          <div key={item.href}>
+            {item.subItems ? (
+              <>
+                <div
+                  className={`nav-item ${item.isAI ? "ai-glow" : ""} ${
+                    pathname.startsWith(item.href) ? "active" : ""
+                  }`}
+                  onClick={() => toggleExpand(item.href)}
+                >
+                  <span className="icon">{item.icon}</span>
+                  <span className="label">{renderLabel(item.label, item.isAI)}</span>
+                  <svg
+                    className={`expand-arrow ${expandedItems.includes(item.href) ? "expanded" : ""}`}
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </div>
+                <div className={`submenu ${expandedItems.includes(item.href) ? "expanded" : ""}`}>
+                  {item.subItems.map((subItem) => (
+                    <Link
+                      key={subItem.href}
+                      href={subItem.disabled ? "#" : subItem.href}
+                      className={`submenu-item ${
+                        pathname === subItem.href ? "active" : ""
+                      } ${subItem.disabled ? "disabled" : ""}`}
+                      onClick={(e) => subItem.disabled && e.preventDefault()}
+                    >
+                      {subItem.label}
+                      {subItem.disabled && (
+                        <span className="coming-soon">Soon</span>
+                      )}
+                    </Link>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <Link
+                href={item.href}
+                className={pathname === item.href ? "active" : ""}
+              >
+                <span className="icon">{item.icon}</span>
+                <span className="label">{item.label}</span>
+              </Link>
+            )}
+          </div>
         ))}
       </nav>
 

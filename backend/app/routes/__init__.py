@@ -7,3 +7,4 @@ from .scan import router as scan_router
 from .attendance_dashboard import router as attendance_router
 from .export import router as export_router
 from .public_registration import router as public_registration_router
+from .anomaly import router as anomaly_router

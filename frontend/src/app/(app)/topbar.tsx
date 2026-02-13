@@ -29,7 +29,12 @@ export default function Topbar() {
     if (pathname === '/dashboard') return 'Dashboard';
     if (pathname === '/events') return 'Events';
     if (pathname === '/attendance') return 'Attendance';
-    if (pathname === '/analytics') return 'Analytics';
+    if (pathname.startsWith('/analytics/anomaly')) return (
+      <span>
+        Cortex <span style={{ color: '#6366f1', fontWeight: 700 }}>AI</span>
+      </span>
+    );
+    if (pathname.startsWith('/analytics')) return 'Analytics';
     if (pathname === '/organizers') return 'Organizers';
     if (pathname === '/scanners') return 'Scanners';
     if (pathname === '/students') return 'Students';

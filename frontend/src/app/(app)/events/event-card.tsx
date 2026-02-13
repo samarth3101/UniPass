@@ -81,6 +81,7 @@ export default function EventCard({ event, onClick }: Props) {
       </div>
       
       <div className="card-footer">
+        <span className="event-id">ID: {event.id}</span>
         <span className="view-link">View Details →</span>
       </div>
     </div>

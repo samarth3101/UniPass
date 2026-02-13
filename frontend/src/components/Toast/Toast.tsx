@@ -1,0 +1,59 @@
+"use client";
+
+import { useEffect, useState } from 'react';
+import './Toast.scss';
+
+interface ToastProps {
+  message: string;
+  duration?: number;
+  onClose?: () => void;
+}
+
+export default function Toast({ message, duration = 4000, onClose }: ToastProps) {
+  const [isVisible, setIsVisible] = useState(true);
+  const [isExiting, setIsExiting] = useState(false);
+
+  useEffect(() => {
+    const exitTimer = setTimeout(() => {
+      setIsExiting(true);
+    }, duration - 300);
+
+    const closeTimer = setTimeout(() => {
+      setIsVisible(false);
+      onClose?.();
+    }, duration);
+
+    return () => {
+      clearTimeout(exitTimer);
+      clearTimeout(closeTimer);
+    };
+  }, [duration, onClose]);
+
+  if (!isVisible) return null;
+
+  return (
+    <div className={`toast-notification ${isExiting ? 'toast-exit' : ''}`}>
+      <div className="toast-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+        </svg>
+      </div>
+      <div className="toast-content">
+        <p className="toast-message">{message}</p>
+      </div>
+      <button 
+        className="toast-close"
+        onClick={() => {
+          setIsExiting(true);
+          setTimeout(() => {
+            setIsVisible(false);
+            onClose?.();
+          }, 300);
+        }}
+        aria-label="Close notification"
+      >
+        ✕
+      </button>
+    </div>
+  );
+}

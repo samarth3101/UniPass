@@ -1,19 +1,19 @@
 .topbar {
-  height: 70px;
-  min-height: 70px;
-  max-height: 70px;
+  height: 62px;
+  min-height: 62px;
+  max-height: 62px;
   background: white;
   border-bottom: 1px solid #e5e9f2;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 40px;
+  padding: 0 36px;
   position: sticky;
   top: 0;
   z-index: 100;
 
   .page-title {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     color: #1e293b;
     margin: 0;
@@ -22,17 +22,17 @@
   .topbar-right {
     display: flex;
     align-items: center;
-    gap: 20px;
-    font-size: 14px;
+    gap: 18px;
+    font-size: 13px;
 
     .system-status {
       .status-indicator {
         display: flex;
         align-items: center;
-        gap: 8px;
-        padding: 6px 12px;
+        gap: 7px;
+        padding: 5px 11px;
         background: #f0fdf4;
-        border-radius: 6px;
+        border-radius: 5px;
 
         svg {
           color: #10b981;
@@ -42,7 +42,7 @@
         .status-text {
           font-weight: 500;
           color: #059669;
-          font-size: 13px;
+          font-size: 12px;
         }
       }
     }
@@ -50,10 +50,10 @@
     .time-display {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 6px 12px;
+      gap: 7px;
+      padding: 5px 11px;
       background: #f8fafc;
-      border-radius: 6px;
+      border-radius: 5px;
       color: #475569;
 
       svg {
@@ -62,17 +62,17 @@
 
       span {
         font-weight: 500;
-        font-size: 13px;
+        font-size: 12px;
         font-variant-numeric: tabular-nums;
-        min-width: 60px;
+        min-width: 55px;
       }
     }
 
     .role-display {
       .role-badge {
-        padding: 6px 14px;
-        border-radius: 6px;
-        font-size: 12px;
+        padding: 5px 12px;
+        border-radius: 5px;
+        font-size: 11px;
         font-weight: 600;
         color: white;
         text-transform: uppercase;
@@ -83,10 +83,10 @@
     .user-display {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 6px 12px;
+      gap: 7px;
+      padding: 5px 11px;
       background: #f8fafc;
-      border-radius: 6px;
+      border-radius: 5px;
       color: #475569;
 
       svg {
@@ -95,8 +95,8 @@
 
       span {
         font-weight: 500;
-        font-size: 13px;
-        max-width: 200px;
+        font-size: 12px;
+        max-width: 180px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
