@@ -193,6 +193,114 @@ export const helpGuideConfig: Record<string, HelpGuideContent> = {
         type: 'list'
       }
     ]
+  },
+
+  'cortex-core': {
+    moduleId: 'cortex-core',
+    moduleName: 'Cortex CORE',
+    displayName: 'Cortex CORE - Campus Organization & Record Engine',
+    sections: [
+      {
+        title: 'What is Cortex CORE?',
+        content: 'Cortex CORE (Campus Organization & Record Engine) is your Advanced Intelligence System for comprehensive participation management, featuring conflict detection, certificate verification, audit trails, and fraud detection.',
+        type: 'paragraph'
+      },
+      {
+        title: 'Core Features',
+        content: [
+          'Conflict Detection: Reconciles participation data with trust scoring',
+          'Student Snapshots: Historical profile tracking with temporal queries',
+          'Certificate System: SHA-256 verification with fraud detection',
+          'Audit Trail: Complete change history, revocations, and invalidations',
+          'Multi-Role Engine: Track multiple roles per student per event',
+          'Transcript Generator: JSON and PDF participation transcripts'
+        ],
+        type: 'list'
+      },
+      {
+        title: 'Cortex Exclusives',
+        content: [
+          'Attendance Invalidation: Mark fraudulent attendance while preserving records',
+          'Data Correction: Apply retroactive corrections with full audit trail',
+          'Fraud Detection: AI-powered pattern detection for suspicious activity',
+          'Public Verification: Certificate validation available to everyone',
+          'Complete API Reference: 21 comprehensive PS1 endpoints'
+        ],
+        type: 'list'
+      },
+      {
+        title: 'How to Use Features',
+        content: [
+          'Conflict Detection: Click "Open Dashboard" to view reconciliation results',
+          'Student Snapshots: Enter PRN and click "View History" to see timeline',
+          'Certificate Verification: Enter Certificate ID and click "Verify" for validation',
+          'Audit Trail: Provide Event ID and Student PRN, then click "View Audit"',
+          'Transcript Generator: Enter Student PRN and choose "View JSON" or "Download PDF"',
+          'Invalidation: Enter Attendance Record ID with reason to invalidate',
+          'Fraud Detection: Enter Event ID and click "Run Fraud Detection"'
+        ],
+        type: 'ordered-list'
+      },
+      {
+        title: 'Multi-Role System',
+        content: [
+          'PARTICIPANT: Regular event attendee',
+          'VOLUNTEER: Helps organize and manage the event',
+          'SPEAKER: Presents or delivers content at the event',
+          'ORGANIZER: Plans and coordinates the event',
+          'JUDGE: Evaluates competitions or judging panels',
+          'MENTOR: Provides guidance and mentorship to participants'
+        ],
+        type: 'list'
+      },
+      {
+        title: 'Understanding Trust Scores',
+        content: 'Trust scores (0-100) indicate data quality and consistency. High scores (80+) mean clean records, medium scores (50-79) suggest minor conflicts, and low scores (below 50) indicate significant inconsistencies requiring review.',
+        type: 'paragraph'
+      },
+      {
+        title: 'Certificate Verification',
+        content: [
+          'Every certificate has a unique SHA-256 hash for verification',
+          'Publicly accessible verification ensures authenticity',
+          'Revoked certificates are clearly marked with warnings',
+          'Fraud detection automatically flags suspicious certificates',
+          'Complete audit trail shows all certificate lifecycle events'
+        ],
+        type: 'list'
+      },
+      {
+        title: 'Fraud Detection Capabilities',
+        content: [
+          'Duplicate Certificates: Finds multiple certificates for same student/event',
+          'Orphan Certificates: Identifies certificates without participation records',
+          'Suspicious Timing: Detects rapid-fire scans and unusual patterns',
+          'Premature Certificates: Flags certificates issued before events',
+          'Revoked Certificate Usage: Tracks usage of revoked certificates',
+          'Override Abuse: Detects excessive manual override patterns',
+          'Bulk Anomalies: Identifies suspicious batch operations'
+        ],
+        type: 'list'
+      },
+      {
+        title: 'Best Practices',
+        content: [
+          'Review conflict dashboard weekly to maintain data quality',
+          'Run fraud detection after major events to catch anomalies early',
+          'Use snapshots to track student progression over time',
+          'Always provide detailed reasons when invalidating or correcting data',
+          'Verify certificates periodically to ensure system integrity',
+          'Export transcripts before semester reviews or student requests',
+          'Check audit trails when investigating data discrepancies'
+        ],
+        type: 'list'
+      },
+      {
+        title: 'API Access',
+        content: 'All Cortex CORE features are available via REST API at /ps1/* endpoints. Visit localhost:8000/docs for complete API documentation with 21 comprehensive endpoints covering all functionality.',
+        type: 'paragraph'
+      }
+    ]
   }
 };
 

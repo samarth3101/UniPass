@@ -7,15 +7,16 @@
     margin-bottom: 2rem;
     
     h1 {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #1e293b;
+      font-size: 1.875rem;
+      font-weight: 600;
+      color: #0f172a;
       margin-bottom: 0.5rem;
+      letter-spacing: -0.01em;
     }
     
     p {
       color: #64748b;
-      font-size: 1rem;
+      font-size: 0.95rem;
     }
   }
   
@@ -23,14 +24,16 @@
     background: white;
     padding: 1.5rem;
     border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
     margin-bottom: 2rem;
+    border: 1px solid #e2e8f0;
     
     label {
       display: block;
       font-weight: 600;
       color: #475569;
       margin-bottom: 0.5rem;
+      font-size: 0.9rem;
     }
     
     select {
@@ -38,20 +41,98 @@
       padding: 0.75rem;
       border: 2px solid #e2e8f0;
       border-radius: 8px;
-      font-size: 1rem;
+      font-size: 0.95rem;
       background: white;
       cursor: pointer;
       transition: all 0.2s;
       
       &:hover {
-        border-color: #3b82f6;
+        border-color: #8b5cf6;
       }
       
       &:focus {
         outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        border-color: #8b5cf6;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
       }
+      
+      &:disabled {
+        background: #f8fafc;
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+    }
+    
+    .loading-events {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      background: #fafafa;
+      border-radius: 8px;
+      border: 2px solid #e2e8f0;
+      
+      .spinner {
+        width: 20px;
+        height: 20px;
+        border: 3px solid #e9d5ff;
+        border-top-color: #8b5cf6;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      
+      span {
+        color: #64748b;
+        font-weight: 500;
+        font-size: 0.9rem;
+      }
+    }
+    
+    .error-message {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem;
+      background: #fef2f2;
+      border-radius: 8px;
+      border: 2px solid #fca5a5;
+      gap: 1rem;
+      
+      span {
+        color: #dc2626;
+        font-weight: 600;
+        flex: 1;
+        font-size: 0.9rem;
+      }
+      
+      .btn-retry {
+        padding: 0.5rem 1rem;
+        background: #dc2626;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+        font-size: 0.875rem;
+        
+        &:hover {
+          background: #b91c1c;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+        }
+        
+        &:active {
+          transform: translateY(0);
+        }
+      }
+    }
+  }
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
     }
   }
   

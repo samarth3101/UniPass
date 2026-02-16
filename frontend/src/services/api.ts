@@ -1,4 +1,4 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 /* ======================
    RAW FETCH WRAPPER
@@ -22,18 +22,41 @@ async function request(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${API_BASE}${path}`, {
-    credentials: "include",
-    headers,
-    ...options,
-  });
+  try {
+    const res = await fetch(`${API_BASE}${path}`, {
+      credentials: "include",
+      headers,
+      ...options,
+    });
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || "API error");
+    if (!res.ok) {
+      let errorMessage = "API error";
+      
+      try {
+        const err = await res.json();
+        errorMessage = err.detail || err.message || `HTTP ${res.status}: ${res.statusText}`;
+      } catch {
+        errorMessage = `HTTP ${res.status}: ${res.statusText}`;
+      }
+      
+      throw new Error(errorMessage);
+    }
+
+    return res.json();
+  } catch (error: any) {
+    // Enhance error messages for common issues
+    if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+      throw new Error(
+        'Unable to connect to the server. Please ensure:\n' +
+        '1. The backend server is running on http://localhost:8000\n' +
+        '2. You have a stable internet connection\n' +
+        '3. No firewall is blocking the connection'
+      );
+    }
+    
+    // Re-throw other errors as-is
+    throw error;
   }
-
-  return res.json();
 }
 
 /* ======================
@@ -58,6 +81,21 @@ const api = {
 };
 
 export default api;
+
+/* ======================
+   HEALTH CHECK
+====================== */
+export async function checkBackendHealth(): Promise<boolean> {
+  try {
+    const response = await fetch(`${API_BASE}/health`, {
+      method: 'GET',
+      credentials: 'include',
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
 
 /* ======================
    AUTH HELPERS

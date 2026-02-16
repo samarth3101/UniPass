@@ -68,13 +68,19 @@ export default function PublicLandingPage() {
       {/* FLOATING NAVBAR */}
       <header className={`floating-navbar ${scrolled ? "scrolled" : ""}`}>
         <nav className="nav-container">
-          <div className="logo">UniPass</div>
+          <div className="logo">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M12 1v6m0 6v6"/>
+            </svg>
+            UniPass
+          </div>
 
           <div className="nav-links">
+            <a href="#cortex-core">Cortex CORE</a>
             <a href="#features">Features</a>
             <a href="#ai-research">AI Research</a>
-            <a href="#how-it-works">How It Works</a>
-            <a href="#use-cases">Use Cases</a>
+            <a href="#pricing">Pricing</a>
           </div>
 
           <div className="nav-actions">
@@ -101,10 +107,10 @@ export default function PublicLandingPage() {
         {/* Mobile Menu */}
         <div className={`mobile-menu ${mobileMenuOpen ? 'active' : ''}`}>
           <div className="mobile-menu-content">
+            <a href="#cortex-core" onClick={closeMobileMenu}>Cortex CORE</a>
             <a href="#features" onClick={closeMobileMenu}>Features</a>
             <a href="#ai-research" onClick={closeMobileMenu}>AI Research</a>
-            <a href="#how-it-works" onClick={closeMobileMenu}>How It Works</a>
-            <a href="#use-cases" onClick={closeMobileMenu}>Use Cases</a>
+            <a href="#pricing" onClick={closeMobileMenu}>Pricing</a>
             <div className="mobile-menu-actions">
               <a href="/login" className="login-btn">Login</a>
               <a href="/signup" className="signup-btn">Get Started</a>
@@ -117,59 +123,61 @@ export default function PublicLandingPage() {
       <section className="hero-section">
         <div className="hero-content">
           <div className="hero-badge">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"/>
             </svg>
-            <span>Research Project • In Development</span>
+            <span>Institutional Intelligence Platform</span>
           </div>
 
           <h1>
-            AI-Powered
-            <br />
-            <span className="gradient-text">Event Attendance System</span>
+            <span className="hero-brand-main">UniPass</span>
+            <span className="hero-brand-sub">Powered by Cortex AI™</span>
+            <span className="gradient-text">Where Campus Participation<br />Becomes Institutional Intelligence</span>
           </h1>
 
           <p className="hero-description">
-            Secure, intelligent platform for university event management with QR-based attendance,
-            real-time analytics, AI-driven insights, and seamless digital ticketing.
-            Built for educational institutions.
+            Transform campus events into structured, intelligent participation data — enabling governance,
+            credibility, and institutional intelligence. The only platform that combines QR attendance,
+            multi-role tracking, certificate ledgers, and AI-powered analytics in one unified system.
           </p>
 
           <div className="hero-stats">
             <div className="stat">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="3" y="3" width="18" height="18" rx="2"/>
-                <path d="M9 9h.01M15 9h.01M9 15h6"/>
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M12 1v6m0 6v6"/>
               </svg>
               <div className="stat-content">
-                <div className="stat-value">QR Scanning</div>
-                <div className="stat-label">Instant Validation</div>
+                <div className="stat-value">Cortex CORE™</div>
+                <div className="stat-label">6 Intelligence Modules</div>
               </div>
             </div>
             <div className="stat">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+              <div className="stat-content">
+                <div className="stat-value">Trust Scoring</div>
+                <div className="stat-label">Conflict Detection</div>
+              </div>
+            </div>
+            <div className="stat">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
               </svg>
               <div className="stat-content">
                 <div className="stat-value">AI Analytics</div>
-                <div className="stat-label">Predictive Insights</div>
-              </div>
-            </div>
-            <div className="stat">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                <polyline points="22,6 12,13 2,6"/>
-              </svg>
-              <div className="stat-content">
-                <div className="stat-value">Email Tickets</div>
-                <div className="stat-label">Automated Delivery</div>
+                <div className="stat-label">Predictive Intelligence</div>
               </div>
             </div>
           </div>
 
           <div className="hero-cta">
             <a href="/signup" className="cta-primary">
-              Start Free Trial
+              Start with Cortex Starter
               <svg
                 width="20"
                 height="20"
@@ -181,10 +189,111 @@ export default function PublicLandingPage() {
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
             </a>
-            <a href="#features" className="cta-secondary">
-              Explore Features
+            <a href="#cortex-core" className="cta-secondary">
+              Explore Cortex CORE
             </a>
           </div>
+        </div>
+      </section>
+
+      {/* CORTEX CORE SECTION */}
+      <section id="cortex-core" className="cortex-core-section">
+        <div className="section-header">
+          <span className="section-badge cortex-badge">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"/>
+            </svg>
+            Cortex CORE™
+          </span>
+          <h2>Six Pillars of Institutional Intelligence</h2>
+          <p className="cortex-subtitle">
+            Advanced participation reconciliation engine that transforms raw event data into
+            verified, auditable, and AI-enhanced institutional knowledge
+          </p>
+        </div>
+
+        <div className="cortex-grid">
+          <div className="cortex-module">
+            <div className="module-icon-wrapper">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="m21 21-4.35-4.35"/>
+              </svg>
+            </div>
+            <h3>Conflict Detection</h3>
+            <p>Participation reconciliation with trust scoring. Identify data inconsistencies across registrations, attendance, and certificates.</p>
+            <div className="module-badge">Phase 1</div>
+          </div>
+
+          <div className="cortex-module">
+            <div className="module-icon-wrapper">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M3 3h18v18H3z"/>
+                <path d="m3 9 9-7 9 7"/>
+              </svg>
+            </div>
+            <h3>Student Snapshots</h3>
+            <p>Historical profile tracking with temporal queries. View student participation at any point in time with complete audit trail.</p>
+            <div className="module-badge">Phase 1</div>
+          </div>
+
+          <div className="cortex-module">
+            <div className="module-icon-wrapper">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+            </div>
+            <h3>Certificate System</h3>
+            <p>SHA-256 verification with fraud detection. Tamper-evident digital certificates with QR validation and revocation tracking.</p>
+            <div className="module-badge">Phase 1</div>
+          </div>
+
+          <div className="cortex-module">
+            <div className="module-icon-wrapper">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="1 4 1 10 7 10"/>
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+              </svg>
+            </div>
+            <h3>Audit Trail</h3>
+            <p>Change history, revocations, and invalidations. Complete forensic tracking of every modification with old vs. new state comparison.</p>
+            <div className="module-badge">Phase 1</div>
+          </div>
+
+          <div className="cortex-module">
+            <div className="module-icon-wrapper">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
+            <h3>Multi-Role Engine</h3>
+            <p>Track multiple roles per student across events. Participant, volunteer, organizer — weighted certification with role hierarchy.</p>
+            <div className="module-badge">Phase 1</div>
+          </div>
+
+          <div className="cortex-module">
+            <div className="module-icon-wrapper">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+            </div>
+            <h3>Transcript Generator</h3>
+            <p>JSON & PDF participation transcripts. Comprehensive student activity reports with certificates, attendance records, and role summaries.</p>
+            <div className="module-badge">Phase 1</div>
+          </div>
+        </div>
+
+        <div className="cortex-cta">
+          <p>Ready to experience the power of Cortex CORE?</p>
+          <a href="/signup" className="cortex-btn">Start Free with Cortex Starter</a>
         </div>
       </section>
 
@@ -193,11 +302,11 @@ export default function PublicLandingPage() {
       {/* FEATURES SECTION */}
       <section id="features" className="features-section">
         <div className="section-header">
-          <span className="section-badge">Core Capabilities</span>
-          <h2>University-Grade Event Management</h2>
+          <span className="section-badge">Foundation Features</span>
+          <h2>Enterprise-Grade Event Management</h2>
           <p>
-            From event creation to AI-powered analytics, UniPass covers every aspect
-            of campus attendance management with enterprise security.
+            Built on battle-tested infrastructure with QR ticketing, real-time monitoring,
+            and automated workflows — the foundation that powers Cortex CORE
           </p>
         </div>
 
@@ -414,10 +523,200 @@ export default function PublicLandingPage() {
             <line x1="12" y1="8" x2="12.01" y2="8"/>
           </svg>
           <p>
-            <strong>Note:</strong> These AI/ML modules are part of our research project and are currently
-            under active development. All features are documented in our technical specification
-            and will be implemented using real-world datasets from event attendance patterns.
+            <strong>Note:</strong> These AI/ML modules power Cortex AI's intelligence layer and are
+            available in Pro and Enterprise plans. All features are production-ready and actively
+            deployed for institutional analytics and predictive modeling.
           </p>
+        </div>
+      </section>
+
+      {/* PRICING TIERS SECTION */}
+      <section id="pricing" className="pricing-section">
+        <div className="section-header">
+          <span className="section-badge">Pricing Tiers</span>
+          <h2>Choose Your Cortex Plan</h2>
+          <p>
+            From pilot testing to university-wide deployment — scalable plans that grow with your institution
+          </p>
+        </div>
+
+        <div className="pricing-grid">
+          {/* Cortex Starter */}
+          <div className="pricing-card starter">
+            <div className="tier-badge">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="12" cy="12" r="10"/>
+              </svg>
+              <span>Cortex Starter</span>
+            </div>
+            <div className="tier-title">
+              <h3>Free Trial / Institutional Pilot</h3>
+              <p>Small departments, pilot testing, early adopters</p>
+            </div>
+            <div className="tier-price">
+              <span className="price">Free</span>
+              <span className="period">90-day trial</span>
+            </div>
+            <div className="tier-limits">
+              <h4>Limits:</h4>
+              <ul>
+                <li>1 Admin • 3 Organizers</li>
+                <li>Up to 20 Volunteers</li>
+                <li>500 student registrations</li>
+                <li>10 active events/month</li>
+              </ul>
+            </div>
+            <div className="tier-features">
+              <h4>Features Included:</h4>
+              <ul>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>Event CRUD & QR ticketing</li>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>Multi-day attendance tracking</li>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>Basic certificates & CSV export</li>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>Descriptive analytics</li>
+              </ul>
+            </div>
+            <div className="tier-support">
+              <strong>Support:</strong> Email (48hr SLA) • Knowledge base
+            </div>
+            <a href="/signup" className="tier-cta starter-cta">Start Free Trial</a>
+          </div>
+
+          {/* Cortex Pro */}
+          <div className="pricing-card pro featured">
+            <div className="featured-badge">Most Popular</div>
+            <div className="tier-badge">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="12" cy="12" r="10"/>
+              </svg>
+              <span>Cortex Pro</span>
+            </div>
+            <div className="tier-title">
+              <h3>Professional Institutional Plan</h3>
+              <p>Full department / multi-event academic units</p>
+            </div>
+            <div className="tier-price">
+              <span className="price">₹31XX/-</span>
+              <span className="period">per institution/year</span>
+            </div>
+            <div className="tier-limits">
+              <h4>Limits:</h4>
+              <ul>
+                <li>3 Admins • 6 Organizers</li>
+                <li>Up to 45 Volunteers</li>
+                <li>5,000 student registrations</li>
+                <li>Unlimited events</li>
+              </ul>
+            </div>
+            <div className="tier-features">
+              <h4>Everything in Starter, plus:</h4>
+              <ul>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>Multi-role participation engine</li>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>Certificate revocation system</li>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>Longitudinal student timeline</li>
+                <li className="ai-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>Participation Trust Score</li>
+                <li className="ai-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>Attendance behavior analysis</li>
+                <li className="ai-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>Risk flag detection</li>
+              </ul>
+            </div>
+            <div className="tier-support">
+              <strong>Support:</strong> 24×7 email + call • Onboarding session • Quarterly reports
+            </div>
+            <a href="/signup" className="tier-cta pro-cta">Get Pro Access</a>
+          </div>
+
+          {/* Cortex Enterprise */}
+          <div className="pricing-card enterprise">
+            <div className="tier-badge">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="12" cy="12" r="10"/>
+              </svg>
+              <span>Cortex Enterprise</span>
+            </div>
+            <div className="tier-title">
+              <h3>Premium Intelligence Suite</h3>
+              <p>University-wide deployment</p>
+            </div>
+            <div className="tier-price">
+              <span className="price">Custom</span>
+              <span className="period">contact sales</span>
+            </div>
+            <div className="tier-limits">
+              <h4>Unlimited Scale:</h4>
+              <ul>
+                <li>Up to 9 Admins • Unlimited Organizers</li>
+                <li>Unlimited Volunteers & Students</li>
+                <li>Multi-campus support</li>
+              </ul>
+            </div>
+            <div className="tier-features">
+              <h4>Everything in Pro, plus:</h4>
+              <ul>
+                <li className="ai-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>Participation Intelligence Engine</li>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>Certificate Transparency Ledger</li>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>API access for ERP integration</li>
+                <li className="ai-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>Fraud/anomaly detection engine</li>
+                <li className="ai-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>Attendance prediction models</li>
+                <li className="ai-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>Student clustering & profiling</li>
+                <li className="ai-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>Sentiment analysis (NLP)</li>
+                <li className="ai-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>Institutional trust index</li>
+              </ul>
+            </div>
+            <div className="tier-support">
+              <strong>Support:</strong> 24×7 priority • Account manager • SLA guarantee • White-label option
+            </div>
+            <a href="/signup" className="tier-cta enterprise-cta">Contact Sales</a>
+          </div>
+        </div>
+
+        <div className="addons-section">
+          <h3>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="16 12 12 8 8 12"/>
+              <line x1="12" y1="16" x2="12" y2="8"/>
+            </svg>
+            Optional Add-On Modules
+          </h3>
+          <div className="addons-grid">
+            <span className="addon-badge">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+              </svg>
+              Placement Participation API
+            </span>
+            <span className="addon-badge">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="18" y1="20" x2="18" y2="10"/>
+                <line x1="12" y1="20" x2="12" y2="4"/>
+                <line x1="6" y1="20" x2="6" y2="14"/>
+              </svg>
+              Accreditation Analytics Pack
+            </span>
+            <span className="addon-badge">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="1" y="3" width="15" height="13"/>
+                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+                <circle cx="5.5" cy="18.5" r="2.5"/>
+                <circle cx="18.5" cy="18.5" r="2.5"/>
+              </svg>
+              Blockchain Certificate Mode
+            </span>
+            <span className="addon-badge">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+              Inter-College Federation
+            </span>
+            <span className="addon-badge">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                <line x1="12" y1="18" x2="12.01" y2="18"/>
+              </svg>
+              Mobile Scanner App
+            </span>
+          </div>
         </div>
       </section>
 
@@ -428,10 +727,120 @@ export default function PublicLandingPage() {
           <p>Simple 4-step process from event creation to AI analytics</p>
         </div>
 
-        <div className="steps-container">
-          <div className="step-item">
-            <div className="step-number">1</div>
-            <div className="step-content">
+        <div className="macbook-container">
+          {/* MacBook Frame */}
+          <div className="macbook">
+            <div className="macbook-screen">
+              {/* Screen Content with Animation */}
+              <div className="screen-content">
+                {/* Browser Chrome */}
+                <div className="browser-chrome">
+                  <div className="browser-dots">
+                    <span className="dot red"></span>
+                    <span className="dot yellow"></span>
+                    <span className="dot green"></span>
+                  </div>
+                  <div className="browser-address">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10"/>
+                      <line x1="2" y1="12" x2="22" y2="12"/>
+                      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                    </svg>
+                    <span>unipass.app/dashboard</span>
+                  </div>
+                </div>
+
+                {/* Animated Workflow Steps */}
+                <div className="workflow-animation">
+                  {/* Mouse Cursor */}
+                  <div className="mouse-cursor">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="white" stroke="black" strokeWidth="1.5">
+                      <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/>
+                    </svg>
+                  </div>
+
+                  <div className="workflow-step step-1">
+                    <div className="step-icon">
+                      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10 9 9 9 8 9"/>
+                      </svg>
+                    </div>
+                    <div className="step-text">
+                      <h4>Create Event</h4>
+                      <p className="typing-text">Setting up Tech Workshop...</p>
+                    </div>
+                  </div>
+
+                  <div className="workflow-step step-2">
+                    <div className="step-icon">
+                      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                        <polyline points="22,6 12,13 2,6"/>
+                      </svg>
+                    </div>
+                    <div className="step-text">
+                      <h4>Send Invites</h4>
+                      <p className="typing-text">Sending to 245 students...</p>
+                    </div>
+                  </div>
+
+                  <div className="workflow-step step-3">
+                    <div className="step-icon">
+                      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                      </svg>
+                    </div>
+                    <div className="step-text">
+                      <h4>QR Validation</h4>
+                      <div className="qr-scanner">
+                        <div className="qr-code">
+                          <div className="qr-grid">
+                            <span></span><span></span><span></span>
+                            <span></span><span></span><span></span>
+                            <span></span><span></span><span></span>
+                          </div>
+                        </div>
+                        <div className="scan-line"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="workflow-step step-4">
+                    <div className="step-icon">
+                      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                      </svg>
+                    </div>
+                    <div className="step-text">
+                      <h4>AI Analysis</h4>
+                      <div className="ai-stats">
+                        <div className="stat-bar">
+                          <span className="label">Attendance</span>
+                          <div className="bar"><div className="fill" style={{width: '87%'}}></div></div>
+                          <span className="value">87%</span>
+                        </div>
+                        <div className="stat-bar">
+                          <span className="label">Engagement</span>
+                          <div className="bar"><div className="fill" style={{width: '92%'}}></div></div>
+                          <span className="value">92%</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Step Details Below MacBook */}
+          <div className="steps-grid">
+            <div className="step-detail">
+              <div className="step-number">1</div>
               <h3>Create Event & Send Invites</h3>
               <p>
                 Admin creates event with details (title, location, date/time).
@@ -439,11 +848,9 @@ export default function PublicLandingPage() {
                 to fetch eligible student lists for automated email invites.
               </p>
             </div>
-          </div>
 
-          <div className="step-item">
-            <div className="step-number">2</div>
-            <div className="step-content">
+            <div className="step-detail">
+              <div className="step-number">2</div>
               <h3>Students Register & Receive Tickets</h3>
               <p>
                 Students register via secure link (ERP auth or Google). System
@@ -451,11 +858,9 @@ export default function PublicLandingPage() {
                 email with embedded QR code—instant digital ticketing.
               </p>
             </div>
-          </div>
 
-          <div className="step-item">
-            <div className="step-number">3</div>
-            <div className="step-content">
+            <div className="step-detail">
+              <div className="step-number">3</div>
               <h3>QR Scan & Real-Time Validation</h3>
               <p>
                 Event handlers scan QR codes at venue. Backend verifies JWT
@@ -463,11 +868,9 @@ export default function PublicLandingPage() {
                 Live monitor shows updates in real-time with SSE.
               </p>
             </div>
-          </div>
 
-          <div className="step-item">
-            <div className="step-number">4</div>
-            <div className="step-content">
+            <div className="step-detail">
+              <div className="step-number">4</div>
               <h3>Export Reports & AI Analysis</h3>
               <p>
                 Generate PDF/CSV reports with attendance statistics. AI modules
@@ -578,17 +981,17 @@ export default function PublicLandingPage() {
       {/* CTA SECTION */}
       <section className="cta-section">
         <div className="cta-content">
-          <h2>Want to Be Part of UniPass Development?</h2>
+          <h2>Ready to Transform Your Campus Events?</h2>
           <p>
-            UniPass is actively being developed as a student project. Sign up to test
-            the platform and help shape the future of campus attendance management.
+            Join institutions using UniPass to turn participation into institutional intelligence.
+            Start your free 90-day trial with Cortex Starter — no credit card required.
           </p>
           <div className="cta-buttons">
             <a href="/signup" className="cta-primary">
-              Get Started Free
+              Start Free with Cortex Starter
             </a>
-            <a href="/login" className="cta-secondary">
-              Sign In
+            <a href="#pricing" className="cta-secondary">
+              View Pricing Plans
             </a>
           </div>
         </div>
@@ -599,10 +1002,17 @@ export default function PublicLandingPage() {
         <div className="footer-content">
           <div className="footer-grid">
             <div className="footer-column footer-brand">
-              <h3>UniPass</h3>
+              <h3>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M12 1v6m0 6v6"/>
+                </svg>
+                UniPass
+              </h3>
+              <p className="footer-powered-by">Powered by Cortex AI™</p>
               <p>
-                Modern attendance management for the digital campus. Built with passion
-                to simplify university operations.
+                Where campus participation becomes institutional intelligence. Built for universities
+                that need governance, credibility, and AI-powered insights.
               </p>
               <div className="social-links">
                 <a href="https://github.com/" target="_blank" rel="noreferrer" aria-label="GitHub">
@@ -626,9 +1036,10 @@ export default function PublicLandingPage() {
             <div className="footer-column">
               <h3>Product</h3>
               <ul>
+                <li><a href="#cortex-core">Cortex CORE</a></li>
                 <li><a href="#features">Features</a></li>
-                <li><a href="#how-it-works">How It Works</a></li>
-                <li><a href="#use-cases">Use Cases</a></li>
+                <li><a href="#ai-research">AI Research</a></li>
+                <li><a href="#pricing">Pricing</a></li>
                 <li><a href="/signup">Get Started</a></li>
               </ul>
             </div>
@@ -652,7 +1063,7 @@ export default function PublicLandingPage() {
           </div>
 
           <div className="footer-bottom">
-            <p>© {new Date().getFullYear()} UniPass. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} UniPass™. All rights reserved.</p>
             <div className="footer-links">
               <a href="#">Privacy Policy</a>
               <a href="#">Terms of Service</a>

@@ -44,7 +44,7 @@ export default function StudentsPage() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("unipass_token");
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
       const response = await fetch(`${apiUrl}/students/bulk-import-csv`, {
         method: "POST",

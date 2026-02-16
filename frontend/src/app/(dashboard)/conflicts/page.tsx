@@ -22,6 +22,8 @@ export default function ConflictDashboard() {
   const [selectedEvent, setSelectedEvent] = useState<number | null>(null);
   const [conflicts, setConflicts] = useState<ConflictStudent[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingEvents, setLoadingEvents] = useState(true);
+  const [eventsError, setEventsError] = useState<string | null>(null);
   const [filter, setFilter] = useState<string>('all');
   const [fraudData, setFraudData] = useState<any>(null);
   const [loadingFraud, setLoadingFraud] = useState(false);
@@ -32,39 +34,88 @@ export default function ConflictDashboard() {
   }, []);
   
   const fetchEvents = async () => {
+    setLoadingEvents(true);
+    setEventsError(null);
+    
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('unipass_token');
+      
+      if (!token) {
+        setEventsError('Please log in to view events');
+        setLoadingEvents(false);
+        return;
+      }
+      
       const response = await fetch('http://localhost:8000/events/', {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
       
-      if (response.ok) {
-        const data = await response.json();
-        setEvents(Array.isArray(data) ? data : data.items || []);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to fetch events: ${response.status} - ${errorText}`);
       }
-    } catch (error) {
+      
+      const data = await response.json();
+      console.log('Events fetched:', data);
+      
+      // Handle different response formats
+      let eventsList = [];
+      if (Array.isArray(data)) {
+        eventsList = data;
+      } else if (data.items && Array.isArray(data.items)) {
+        eventsList = data.items;
+      } else if (data.events && Array.isArray(data.events)) {
+        eventsList = data.events;
+      }
+      
+      setEvents(eventsList);
+      
+      if (eventsList.length === 0) {
+        setEventsError('No events found. Please create an event first.');
+      }
+    } catch (error: any) {
       console.error('Error fetching events:', error);
+      setEventsError(error.message || 'Failed to load events. Please check your connection and try again.');
+    } finally {
+      setLoadingEvents(false);
     }
   };
   
   const fetchConflicts = async (eventId: number) => {
     setLoading(true);
+    setConflicts([]);
+    
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('unipass_token');
+      
+      if (!token) {
+        alert('Please log in to view conflicts');
+        setLoading(false);
+        return;
+      }
+      
       const response = await fetch(`http://localhost:8000/ps1/participation/conflicts/${eventId}`, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
       
-      if (response.ok) {
-        const data = await response.json();
-        setConflicts(data);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to fetch conflicts: ${response.status}`);
       }
-    } catch (error) {
+      
+      const data = await response.json();
+      console.log('Conflicts fetched:', data);
+      setConflicts(Array.isArray(data) ? data : []);
+    } catch (error: any) {
       console.error('Error fetching conflicts:', error);
+      alert(`Failed to load conflicts: ${error.message}`);
+      setConflicts([]);
     } finally {
       setLoading(false);
     }
@@ -74,20 +125,35 @@ export default function ConflictDashboard() {
     if (!selectedEvent) return;
     
     setLoadingFraud(true);
+    setFraudData(null);
+    
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('unipass_token');
+      
+      if (!token) {
+        alert('Please log in to run fraud detection');
+        setLoadingFraud(false);
+        return;
+      }
+      
       const response = await fetch(`http://localhost:8000/ps1/fraud/detect/${selectedEvent}`, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
       
-      if (response.ok) {
-        const data = await response.json();
-        setFraudData(data);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to run fraud detection: ${response.status}`);
       }
-    } catch (error) {
+      
+      const data = await response.json();
+      console.log('Fraud detection results:', data);
+      setFraudData(data);
+    } catch (error: any) {
       console.error('Error running fraud detection:', error);
+      alert(`Failed to run fraud detection: ${error.message}`);
     } finally {
       setLoadingFraud(false);
     }
@@ -134,18 +200,33 @@ export default function ConflictDashboard() {
       
       <div className="event-selector">
         <label htmlFor="event-select">Select Event:</label>
-        <select 
-          id="event-select"
-          value={selectedEvent || ''}
-          onChange={(e) => handleEventChange(Number(e.target.value))}
-        >
-          <option value="">Choose an event...</option>
-          {events.map(event => (
-            <option key={event.id} value={event.id}>
-              {event.title} - {new Date(event.start_time).toLocaleDateString()}
+        {loadingEvents ? (
+          <div className="loading-events">
+            <div className="spinner"></div>
+            <span>Loading events...</span>
+          </div>
+        ) : eventsError ? (
+          <div className="error-message">
+            <span>⚠️ {eventsError}</span>
+            <button onClick={fetchEvents} className="btn-retry">Retry</button>
+          </div>
+        ) : (
+          <select 
+            id="event-select"
+            value={selectedEvent || ''}
+            onChange={(e) => handleEventChange(Number(e.target.value))}
+            disabled={events.length === 0}
+          >
+            <option value="">
+              {events.length === 0 ? 'No events available' : 'Choose an event...'}
             </option>
-          ))}
-        </select>
+            {events.map(event => (
+              <option key={event.id} value={event.id}>
+                {event.title} - {event.start_time ? new Date(event.start_time).toLocaleDateString() : event.start_date ? new Date(event.start_date).toLocaleDateString() : 'Date N/A'}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
       
       {selectedEvent && (

@@ -38,7 +38,7 @@ class TranscriptService:
             self.db.query(Ticket, Event)
             .join(Event, Ticket.event_id == Event.id)
             .filter(Ticket.student_prn == prn)
-            .order_by(Event.start_date.desc())
+            .order_by(Event.start_time.desc())
             .all()
         )
         
@@ -47,15 +47,14 @@ class TranscriptService:
             self.db.query(Attendance, Event)
             .join(Event, Attendance.event_id == Event.id)
             .filter(Attendance.student_prn == prn)
-            .order_by(Event.start_date.desc())
+            .order_by(Event.start_time.desc())
             .all()
         )
         
         # Get all certificates
         certificates = (
-            self.db.query(Certificate, Event, User)
+            self.db.query(Certificate, Event)
             .join(Event, Certificate.event_id == Event.id)
-            .join(User, Certificate.issued_by == User.id)
             .filter(Certificate.student_prn == prn)
             .filter(Certificate.revoked == False)
             .order_by(Certificate.issued_at.desc())
@@ -85,7 +84,7 @@ class TranscriptService:
                 
                 # Find matching certificate
                 cert_record = next(
-                    (c for c, e, _ in certificates if e.id == event.id),
+                    (c for c, e in certificates if e.id == event.id),
                     None
                 )
                 
@@ -97,12 +96,12 @@ class TranscriptService:
                 participations.append({
                     'event_id': event.id,
                     'event_name': event.title,
-                    'event_date': event.start_time if hasattr(event, 'start_time') else event.start_date if hasattr(event, 'start_date') else None,
+                    'event_date': event.start_time,
                     'event_type': event.event_type if hasattr(event, 'event_type') else 'event',
                     'registered': True,
                     'registration_date': ticket.issued_at,
                     'attended': attendance_record is not None,
-                    'attendance_time': attendance_record.scan_time if attendance_record else None,
+                    'attendance_time': attendance_record.scanned_at if attendance_record else None,
                     'certified': cert_record is not None,
                     'certificate_id': cert_record.certificate_id if cert_record else None,
                     'roles': event_roles,
