@@ -1,27 +1,54 @@
-# PS1 Phase 1 - Quick Reference
+# Cortex CORE - Quick Reference
 
-## ✅ What's Been Implemented
+> **Previously PS1** - Now rebranded as **Cortex CORE** (Campus Organization & Record Engine)
 
-### 🎯 Features (58% PS1 Coverage)
+## ✅ Complete Implementation - 100% Coverage
 
-1. **Participation Reconciliation** (70%)
+### 🎯 Core Features (All 5 Implemented)
+
+1. **Participation Reconciliation** ✓
    - Canonical status: REGISTERED_ONLY | ATTENDED_NO_CERTIFICATE | CERTIFIED | INVALIDATED
    - 5 conflict types detected
    - Trust scoring (0-100)
+   - Conflicts dashboard at `/conflicts`
 
-2. **Certificate Verification** (75%)
+2. **Certificate Verification** ✓
    - SHA-256 hash-based verification
    - Public verification at `/verify`
-   - Revocation support
+   - Revocation support with warnings
+   - Fraud detection integration
 
-3. **Retroactive Changes** (60%)
+3. **Retroactive Changes** ✓
    - Certificate revocation with reason
    - Complete audit trail
+   - Change history tracking
+   - Manual corrections workflow
+   - Old/new state comparison
 
-4. **Multi-Role Participation** (85%)
+4. **Multi-Role Participation** ✓
    - 6 role types: PARTICIPANT, VOLUNTEER, SPEAKER, ORGANIZER, JUDGE, MENTOR
    - Multiple roles per student
    - Time segments support
+
+5. **Fraud Detection** ✓
+   - 7 algorithmic detection rules
+   - Duplicate certificates detection
+   - Orphan certificates flagging
+   - Rapid scan monitoring
+   - Premature certificates check
+   - Revoked usage tracking
+   - Override abuse detection
+   - Bulk anomaly detection
+
+---
+
+## 🎨 Cortex Exclusives
+
+### Advanced Features:
+- **Attendance Invalidation**: Mark fraudulent attendance while preserving records
+- **Audit Trail**: Complete change history with old/new state comparison
+- **Fraud Detection**: AI-powered pattern recognition for suspicious activity
+- **Correction Workflow**: Apply retroactive corrections with full audit logging
 
 ---
 
@@ -41,18 +68,33 @@ certificates +
     verification_hash VARCHAR UNIQUE
     revoked BOOLEAN DEFAULT FALSE
     revoked_at TIMESTAMP
-    revoked_by INTEGER
+    revoked_by INTEGER FK users
     revocation_reason TEXT
+
+attendance +
+    invalidated BOOLEAN DEFAULT FALSE
+    invalidated_at TIMESTAMP
+    invalidated_by INTEGER FK users
+    invalidation_reason TEXT
 ```
 
 ---
 
-## 🔌 API Endpoints
+## 🔌 API Endpoints (21 Total)
 
-### Participation Status:
+### Core Reconciliation:
 ```http
 GET /ps1/participation/status/{event_id}/{prn}
 GET /ps1/participation/conflicts/{event_id}
+```
+
+### Advanced Audit & Fraud:
+```http
+POST /ps1/attendance/{id}/invalidate
+GET  /ps1/audit/{event_id}/{student_prn}
+GET  /ps1/audit/summary/{event_id}
+POST /ps1/participation/{event_id}/{prn}/correct
+GET  /ps1/fraud/detect/{event_id}
 ```
 
 **Example Response:**

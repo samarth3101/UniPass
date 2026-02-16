@@ -1,13 +1,16 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getAuth, getUser, isAuthenticated } from '@/lib/auth';
+import api from '@/services/api';
 import './ps1.scss';
 
-export default function PS1FeaturesPage() {
-  const [selectedStudent, setSelectedStudent] = useState('');
+export default function CortexCorePage() {
+  const [selectedStudent, setSelectedStudent] = useState('SOE23201020038');
   const [transcriptData, setTranscriptData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [snapshotData, setSnapshotData] = useState<any[]>([]);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const [certificateId, setCertificateId] = useState('');
   
   // New Phase 3 State
@@ -23,6 +26,14 @@ export default function PS1FeaturesPage() {
     reason: ''
   });
   
+  // Check authentication on mount
+  useEffect(() => {
+    const user = getUser();
+    if (user) {
+      setUserEmail(user.email);
+    }
+  }, []);
+  
   // Test Transcript Generator
   const fetchTranscript = async () => {
     if (!selectedStudent) {
@@ -32,22 +43,22 @@ export default function PS1FeaturesPage() {
     
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8000/ps1/transcript/${selectedStudent}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setTranscriptData(data);
-      } else {
-        alert('Failed to fetch transcript');
+      const token = getAuth();
+      if (!token) {
+        alert('⚠️ Please login first to access Cortex CORE features');
+        setLoading(false);
+        return;
       }
-    } catch (error) {
+      
+      const data = await api.get(`/ps1/transcript/${selectedStudent}`);
+      setTranscriptData(data);
+    } catch (error: any) {
       console.error('Error:', error);
-      alert('Error fetching transcript');
+      if (error.message.includes('401')) {
+        alert('🔒 Authentication required. Please login to access this feature.');
+      } else {
+        alert(`Failed to fetch transcript: ${error.message || 'Unknown error'}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -62,12 +73,24 @@ export default function PS1FeaturesPage() {
     
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuth();
+      if (!token) {
+        alert('⚠️ Please login first to access Cortex CORE features');
+        setLoading(false);
+        return;
+      }
+      
       const response = await fetch(`http://localhost:8000/ps1/transcript/${selectedStudent}/pdf`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
+      
+      if (response.status === 401) {
+        alert('🔒 Authentication required. Please login to access this feature.');
+        setLoading(false);
+        return;
+      }
       
       if (response.ok) {
         const blob = await response.blob();
@@ -79,13 +102,14 @@ export default function PS1FeaturesPage() {
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
-        alert('PDF downloaded successfully!');
+        alert('✅ PDF downloaded successfully!');
       } else {
-        alert('Failed to download PDF');
+        const error = await response.json();
+        alert(`Failed to download PDF: ${error.detail || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Error downloading PDF');
+      alert('Error downloading PDF. Please check your connection.');
     } finally {
       setLoading(false);
     }
@@ -100,22 +124,35 @@ export default function PS1FeaturesPage() {
     
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuth();
+      if (!token) {
+        alert('⚠️ Please login first to access Cortex CORE features');
+        setLoading(false);
+        return;
+      }
+      
       const response = await fetch(`http://localhost:8000/ps1/snapshots/student/${selectedStudent}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       
+      if (response.status === 401) {
+        alert('🔒 Authentication required. Please login to access this feature.');
+        setLoading(false);
+        return;
+      }
+      
       if (response.ok) {
         const data = await response.json();
         setSnapshotData(data);
       } else {
-        alert('Failed to fetch snapshots');
+        const error = await response.json();
+        alert(`Failed to fetch snapshots: ${error.detail || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Error fetching snapshots');
+      alert('Error fetching snapshots. Please check your connection.');
     } finally {
       setLoading(false);
     }
@@ -130,22 +167,35 @@ export default function PS1FeaturesPage() {
     
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuth();
+      if (!token) {
+        alert('⚠️ Please login first to access Cortex CORE features');
+        setLoading(false);
+        return;
+      }
+      
       const response = await fetch(`http://localhost:8000/ps1/audit/${selectedEvent}/${selectedStudent}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       
+      if (response.status === 401) {
+        alert('🔒 Authentication required. Please login to access this feature.');
+        setLoading(false);
+        return;
+      }
+      
       if (response.ok) {
         const data = await response.json();
         setAuditHistory(data);
       } else {
-        alert('Failed to fetch audit history');
+        const error = await response.json();
+        alert(`Failed to fetch audit history: ${error.detail || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Error fetching audit history');
+      alert('Error fetching audit history. Please check your connection.');
     } finally {
       setLoading(false);
     }
@@ -154,28 +204,41 @@ export default function PS1FeaturesPage() {
   // Run Fraud Detection (Phase 3)
   const runFraudDetection = async () => {
     if (!selectedEvent) {
-      alert('Please enter Event ID');
+      alert('Please enter an Event ID');
       return;
     }
     
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuth();
+      if (!token) {
+        alert('⚠️ Please login first to access Cortex CORE features');
+        setLoading(false);
+        return;
+      }
+      
       const response = await fetch(`http://localhost:8000/ps1/fraud/detect/${selectedEvent}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       
+      if (response.status === 401) {
+        alert('🔒 Authentication required. Please login to access this feature.');
+        setLoading(false);
+        return;
+      }
+      
       if (response.ok) {
         const data = await response.json();
         setFraudReport(data);
       } else {
-        alert('Failed to run fraud detection');
+        const error = await response.json();
+        alert(`Failed to run fraud detection: ${error.detail || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Error running fraud detection');
+      alert('Error running fraud detection. Please check your connection.');
     } finally {
       setLoading(false);
     }
@@ -184,13 +247,19 @@ export default function PS1FeaturesPage() {
   // Invalidate Attendance (Phase 3)
   const invalidateAttendance = async () => {
     if (!attendanceId || !invalidationReason) {
-      alert('Please enter Attendance ID and Reason');
+      alert('Please provide both Attendance ID and reason');
       return;
     }
     
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuth();
+      if (!token) {
+        alert('⚠️ Please login first to access Cortex CORE features');
+        setLoading(false);
+        return;
+      }
+      
       const response = await fetch(`http://localhost:8000/ps1/attendance/${attendanceId}/invalidate`, {
         method: 'POST',
         headers: {
@@ -199,6 +268,12 @@ export default function PS1FeaturesPage() {
         },
         body: JSON.stringify({ reason: invalidationReason })
       });
+      
+      if (response.status === 401) {
+        alert('🔒 Authentication required. Please login to access this feature.');
+        setLoading(false);
+        return;
+      }
       
       if (response.ok) {
         const data = await response.json();
@@ -211,7 +286,7 @@ export default function PS1FeaturesPage() {
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Error invalidating attendance');
+      alert('Error invalidating attendance. Please check your connection.');
     } finally {
       setLoading(false);
     }
@@ -226,7 +301,13 @@ export default function PS1FeaturesPage() {
     
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuth();
+      if (!token) {
+        alert('⚠️ Please login first to access Cortex CORE features');
+        setLoading(false);
+        return;
+      }
+      
       const response = await fetch(`http://localhost:8000/ps1/participation/${selectedEvent}/${selectedStudent}/correct`, {
         method: 'POST',
         headers: {
@@ -241,6 +322,12 @@ export default function PS1FeaturesPage() {
         })
       });
       
+      if (response.status === 401) {
+        alert('🔒 Authentication required. Please login to access this feature.');
+        setLoading(false);
+        return;
+      }
+      
       if (response.ok) {
         const data = await response.json();
         alert(`✅ ${data.message}`);
@@ -251,7 +338,7 @@ export default function PS1FeaturesPage() {
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Error submitting correction');
+      alert('Error submitting correction. Please check your connection.');
     } finally {
       setLoading(false);
     }
@@ -260,19 +347,26 @@ export default function PS1FeaturesPage() {
   return (
     <div className="ps1-features-page">
       <div className="page-header">
-        <svg className="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M9 11l3 3L22 4"/>
-          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-        </svg>
-        <h1>PS1 Complete System</h1>
-        <p>Unified Campus Participation Intelligence - 100% Compliance</p>
-        <div className="compliance-badge">
-          <span className="badge-icon">✓</span>
-          <span>All 5 Features Implemented</span>
+        <h1 className="cortex-title">
+          Cortex <span className="core-gradient">CORE</span>
+        </h1>
+        <p className="subtitle">Campus Organization & Record Engine - Advanced Intelligence System</p>
+        
+        <div className="auth-info">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 8v4"/>
+            <path d="M12 16h.01"/>
+          </svg>
+          {userEmail ? (
+            <span>Logged in as <strong>{userEmail}</strong> • Sample PRN: <strong>SOE23201020038</strong></span>
+          ) : (
+            <span>⚠️ Login required to access features • Sample PRN: <strong>SOE23201020038</strong></span>
+          )}
         </div>
       </div>
       
-      {/* Feature Cards Grid - All 5 PS1 Features */}
+      {/* Feature Cards Grid - All Features */}
       <div className="feature-grid">
         
         {/* Feature 1: Participation Reconciliation */}
@@ -285,7 +379,6 @@ export default function PS1FeaturesPage() {
           </div>
           <h2>Conflict Detection</h2>
           <p>Participation reconciliation with trust scoring</p>
-          <div className="feature-status status-complete">Feature 1 ✓</div>
           <a href="/conflicts" className="btn btn-primary">
             <span>Open Dashboard</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -304,7 +397,6 @@ export default function PS1FeaturesPage() {
           </div>
           <h2>Student Snapshots</h2>
           <p>Historical profile tracking with temporal queries</p>
-          <div className="feature-status status-complete">Feature 2 ✓</div>
           <div className="test-section">
             <input
               type="text"
@@ -333,7 +425,6 @@ export default function PS1FeaturesPage() {
           </div>
           <h2>Certificate System</h2>
           <p>SHA-256 verification + fraud detection</p>
-          <div className="feature-status status-complete">Feature 3 ✓</div>
           <div className="test-section">
             <input
               type="text"
@@ -362,7 +453,6 @@ export default function PS1FeaturesPage() {
           </div>
           <h2>Audit Trail</h2>
           <p>Change history, revocations, invalidations</p>
-          <div className="feature-status status-complete">Feature 4 ✓</div>
           <div className="test-section">
             <input
               type="text"
@@ -400,7 +490,6 @@ export default function PS1FeaturesPage() {
           </div>
           <h2>Multi-Role Engine</h2>
           <p>Track multiple roles per student</p>
-          <div className="feature-status status-complete">Feature 5 ✓</div>
           <div className="role-badges">
             <span className="role-badge">PARTICIPANT</span>
             <span className="role-badge">VOLUNTEER</span>
@@ -424,7 +513,6 @@ export default function PS1FeaturesPage() {
           </div>
           <h2>Transcript Generator</h2>
           <p>JSON & PDF participation transcripts</p>
-          <div className="feature-status status-complete">Phase 2 ✓</div>
           <div className="test-section">
             <input
               type="text"
@@ -454,13 +542,15 @@ export default function PS1FeaturesPage() {
         
       </div>
 
-      {/* Phase 3 Exclusive Features */}
+      {/* Cortex Exclusive Features */}
       <div className="phase3-section">
         <h2 className="section-title">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
           </svg>
-          Phase 3 Exclusive Features
+          Cortex <span className="core-gradient">Exclusives</span>
         </h2>
 
         <div className="phase3-grid">

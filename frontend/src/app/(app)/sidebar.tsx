@@ -20,11 +20,24 @@ export default function Sidebar() {
     );
   };
 
-  const renderLabel = (label: string, isAI: boolean = false) => {
+  const renderLabel = (label: string, isAI: boolean = false, isCORE: boolean = false) => {
     if (isAI && label === "Cortex AI") {
       return (
         <>
           Cortex <span style={{ color: '#6366f1', fontWeight: 600 }}>AI</span>
+        </>
+      );
+    }
+    if (isCORE && label === "Cortex CORE") {
+      return (
+        <>
+          Cortex <span style={{ 
+            background: 'linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899, #f59e0b)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            fontWeight: 700
+          }}>CORE</span>
         </>
       );
     }
@@ -76,15 +89,18 @@ export default function Sidebar() {
       roles: ["admin", "organizer"],
     },
     {
-      label: "PS1 Testing",
+      label: "Cortex CORE",
       href: "/ps1",
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M9 11l3 3L22 4"/>
-          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+          <circle cx="12" cy="12" r="10"/>
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 2v4"/>
+          <path d="M12 18v4"/>
         </svg>
       ),
       roles: ["admin", "organizer"],
+      isCORE: true,
     },
     {
       label: "Cortex AI",
@@ -181,7 +197,7 @@ export default function Sidebar() {
                   onClick={() => toggleExpand(item.href)}
                 >
                   <span className="icon">{item.icon}</span>
-                  <span className="label">{renderLabel(item.label, item.isAI)}</span>
+                  <span className="label">{renderLabel(item.label, item.isAI, item.isCORE)}</span>
                   <svg
                     className={`expand-arrow ${expandedItems.includes(item.href) ? "expanded" : ""}`}
                     width="16"
