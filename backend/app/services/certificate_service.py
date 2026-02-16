@@ -161,6 +161,9 @@ def issue_certificates(
             db.add(certificate)
             db.flush()  # Assign ID without committing
             
+            # Generate verification hash (PS1 Feature 3)
+            certificate.verification_hash = certificate.generate_verification_hash()
+            
             certificates_issued += 1
             
             # Send email if student has email

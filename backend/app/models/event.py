@@ -30,3 +30,6 @@ class Event(Base):
     
     # Relationship to AuditLogs
     audit_logs = relationship("AuditLog", back_populates="event", cascade="all, delete-orphan")
+    
+    # Relationship to StudentSnapshots (PS1 Phase 2)
+    student_snapshots = relationship("StudentSnapshot", back_populates="event", cascade="all, delete-orphan")

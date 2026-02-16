@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum as SQLEnum
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum as SQLEnum, Boolean, Text
+from sqlalchemy.orm import relationship
 from app.db.base import Base
 from datetime import datetime, timezone
 from enum import Enum
@@ -27,3 +28,13 @@ class Attendance(Base):
     scan_source = Column(String, default="qr_scan", nullable=False)
     scanner_id = Column(Integer, ForeignKey('users.id'), nullable=True)  # Who performed scan
     device_info = Column(String, nullable=True)  # Browser/device fingerprint
+    
+    # PS1 Feature 4: Retroactive Change Support (Attendance Invalidation)
+    invalidated = Column(Boolean, default=False, nullable=False)  # Mark attendance as invalid
+    invalidated_at = Column(DateTime, nullable=True)  # When was it invalidated
+    invalidated_by = Column(Integer, ForeignKey('users.id'), nullable=True)  # Who invalidated it
+    invalidation_reason = Column(Text, nullable=True)  # Reason for invalidation
+    
+    # Relationships
+    scanner = relationship("User", foreign_keys=[scanner_id])
+    invalidator = relationship("User", foreign_keys=[invalidated_by])

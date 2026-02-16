@@ -1,7 +1,9 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean, Text
 from sqlalchemy.orm import relationship
 from app.db.base import Base
 from datetime import datetime, timezone
+import hashlib
+import os
 
 class Certificate(Base):
     """
@@ -22,10 +24,34 @@ class Certificate(Base):
     email_sent = Column(Boolean, default=False)
     email_sent_at = Column(DateTime, nullable=True)
     
+    # PS1 Feature 3: Verification System
+    verification_hash = Column(String, unique=True, index=True, nullable=True)  # SHA-256 hash for verification
+    
+    # PS1 Feature 4: Revocation Support
+    revoked = Column(Boolean, default=False)
+    revoked_at = Column(DateTime, nullable=True)
+    revoked_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    revocation_reason = Column(Text, nullable=True)
+    
     # Relationship to Event
     event = relationship("Event", foreign_keys=[event_id])
+    revoker = relationship("User", foreign_keys=[revoked_by])
     
     # Unique constraint: one certificate per student per event
     __table_args__ = (
         {"sqlite_autoincrement": True},
     )
+    
+    def generate_verification_hash(self, secret_key: str = None) -> str:
+        """Generate SHA-256 hash for certificate verification"""
+        if not secret_key:
+            secret_key = os.getenv("SECRET_KEY", "default-secret-key")
+        
+        # Create unique string from certificate data
+        data = f"{self.student_prn}:{self.event_id}:{self.certificate_id}:{self.issued_at.isoformat()}:{secret_key}"
+        return hashlib.sha256(data.encode()).hexdigest()
+    
+    def verify_hash(self, provided_hash: str, secret_key: str = None) -> bool:
+        """Verify if provided hash matches the certificate"""
+        expected_hash = self.generate_verification_hash(secret_key)
+        return expected_hash == provided_hash
