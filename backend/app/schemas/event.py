@@ -9,6 +9,7 @@ class EventCreate(BaseModel):
     location: Optional[str] = None
     start_time: datetime
     end_time: datetime
+    guest_speaker: Optional[str] = None  # Guest speaker or special guest name
     total_days: Optional[int] = 1  # Number of days event spans (default: 1)
 
     @field_validator('start_time', 'end_time', mode='before')
@@ -33,6 +34,7 @@ class EventResponse(BaseModel):
     end_time: datetime
     created_at: datetime
     share_slug: str
+    guest_speaker: Optional[str] = None  # Guest speaker or special guest name
     total_days: Optional[int] = 1  # Number of days event spans
 
     @field_serializer('created_at', 'start_time', 'end_time')

@@ -349,7 +349,7 @@ export default function StudentModal({ prn, onClose, overrideMode, onAuthRequire
                                 {event.status === "completed" ? "✓ Attendance Confirmed" : "Scan to Mark Attendance"}
                               </div>
                               <img 
-                                src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/tickets/qr?token=${event.token}`} 
+                                src={`/api/tickets/qr?token=${event.token}`} 
                                 alt="QR Code"
                                 className="qr-image"
                               />

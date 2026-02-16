@@ -54,9 +54,14 @@ export default function AuditLogs({ eventId }: Props) {
       case "override_used":
         return "badge badge-warning";
       case "certificates_pushed":
+      case "role_certificates_pushed":
+      case "certificates_resent":
         return "badge badge-certificate";
       case "feedback_sent":
         return "badge badge-feedback";
+      case "volunteer_added":
+      case "volunteer_removed":
+        return "badge badge-info";
       default:
         return "badge";
     }
@@ -78,28 +83,48 @@ export default function AuditLogs({ eventId }: Props) {
         return "Override";
       case "certificates_pushed":
         return "Certificates Pushed";
+      case "role_certificates_pushed":
+        return "Role Certificates Pushed";
+      case "certificates_resent":
+        return "Certificates Resent";
       case "feedback_sent":
         return "Feedback Requests Sent";
+      case "volunteer_added":
+        return "Volunteer Added";
+      case "volunteer_removed":
+        return "Volunteer Removed";
       default:
         return actionType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
   }
 
   function formatTimestamp(timestamp: string): string {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
+    try {
+      const date = new Date(timestamp);
+      const now = new Date();
+      const diff = now.getTime() - date.getTime();
+      
+      // Handle future timestamps (possible timezone issues)
+      if (diff < 0) {
+        return date.toLocaleDateString() + " " + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
+      
+      const seconds = Math.floor(diff / 1000);
+      const minutes = Math.floor(diff / 60000);
+      const hours = Math.floor(diff / 3600000);
+      const days = Math.floor(diff / 86400000);
 
-    if (minutes < 1) return "Just now";
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    if (days < 7) return `${days}d ago`;
-    
-    return date.toLocaleDateString() + " " + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      if (seconds < 30) return "Just now";
+      if (minutes < 1) return `${seconds}s ago`;
+      if (minutes < 60) return `${minutes}m ago`;
+      if (hours < 24) return `${hours}h ago`;
+      if (days < 7) return `${days}d ago`;
+      
+      return date.toLocaleDateString() + " " + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch (error) {
+      console.error('Error formatting timestamp:', timestamp, error);
+      return timestamp;
+    }
   }
 
   function renderDetails(actionType: string, details: Record<string, any>) {
@@ -198,6 +223,66 @@ export default function AuditLogs({ eventId }: Props) {
                 <span className="stat-value error">{details.failed_count}</span>
               </div>
             )}
+          </div>
+        );
+      
+      case "role_certificates_pushed":
+        return (
+          <div className="log-details certificate-details">
+            <div className="cert-stat">
+              <span className="stat-label">Total Issued:</span>
+              <span className="stat-value success">{details.total_issued || 0}</span>
+            </div>
+            <div className="cert-stat">
+              <span className="stat-label">Emails Sent:</span>
+              <span className="stat-value success">{details.total_emailed || 0}</span>
+            </div>
+            {(details.total_failed && details.total_failed > 0) && (
+              <div className="cert-stat">
+                <span className="stat-label">Emails Failed:</span>
+                <span className="stat-value error">{details.total_failed}</span>
+              </div>
+            )}
+            {details.roles && (
+              <div className="cert-stat">
+                <span className="stat-label">Roles:</span>
+                <span className="stat-value">{Object.entries(details.roles).filter(([_, v]) => v).map(([k]) => k).join(', ')}</span>
+              </div>
+            )}
+          </div>
+        );
+      
+      case "certificates_resent":
+        return (
+          <div className="log-details certificate-details">
+            <div className="cert-stat">
+              <span className="stat-label">Total Attempted:</span>
+              <span className="stat-value">{details.total_attempted || 0}</span>
+            </div>
+            <div className="cert-stat">
+              <span className="stat-label">Emails Sent:</span>
+              <span className="stat-value success">{details.emails_sent || 0}</span>
+            </div>
+            {(details.still_failed && details.still_failed > 0) && (
+              <div className="cert-stat">
+                <span className="stat-label">Still Failed:</span>
+                <span className="stat-value error">{details.still_failed}</span>
+              </div>
+            )}
+          </div>
+        );
+      
+      case "volunteer_added":
+        return (
+          <div className="log-details">
+            <span>Added volunteer: {details.volunteer_name} ({details.volunteer_email})</span>
+          </div>
+        );
+      
+      case "volunteer_removed":
+        return (
+          <div className="log-details">
+            <span>Removed volunteer: {details.volunteer_name} ({details.volunteer_email})</span>
           </div>
         );
       

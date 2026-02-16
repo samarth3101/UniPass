@@ -34,11 +34,18 @@ export default function CortexCorePage() {
     
     // Check backend health
     checkBackendHealth().then(setBackendOnline);
+
+    // Cleanup function to ensure body overflow is restored on unmount
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, []);
 
   const closeModal = () => {
     setActiveModal(null);
     setModalContent(null);
+    // Ensure body overflow is restored
+    document.body.style.overflow = '';
   };
   
   const retryBackendConnection = async () => {
@@ -210,7 +217,7 @@ export default function CortexCorePage() {
         setModalContent(data);
         setActiveModal('transcript');
       } else {
-        const response = await fetch(`http://localhost:8000/ps1/transcript/${studentPRN}/pdf`, {
+        const response = await fetch(`/api/ps1/transcript/${studentPRN}/pdf`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -260,7 +267,7 @@ export default function CortexCorePage() {
             </svg>
             <div className="banner-text">
               <strong>Backend Server Offline</strong>
-              <p>Unable to connect to http://localhost:8000. Please start the backend server.</p>
+              <p>Unable to connect to the backend. Please start the backend server.</p>
             </div>
             <button onClick={retryBackendConnection} className="btn-retry-small">
               Retry

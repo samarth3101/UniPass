@@ -11,7 +11,7 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter, A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak, Image
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 
 from app.models.user import User
@@ -20,6 +20,7 @@ from app.models.ticket import Ticket
 from app.models.attendance import Attendance
 from app.models.certificate import Certificate
 from app.models.participation_role import ParticipationRole
+from app.services.qr_service import generate_transcript_qr_code
 
 
 class TranscriptService:
@@ -280,8 +281,19 @@ class TranscriptService:
         else:
             story.append(Paragraph("No participation records found.", styles['Normal']))
         
-        # Footer
-        story.append(Spacer(1, 0.5*inch))
+        # Footer with QR Code (PS1 Feature 3)
+        story.append(Spacer(1, 0.4*inch))
+        
+        # Generate QR code for transcript verification
+        try:
+            qr_buffer = generate_transcript_qr_code(data['prn'], size=150)
+            qr_image = Image(qr_buffer, width=1.2*inch, height=1.2*inch)
+            story.append(qr_image)
+            story.append(Spacer(1, 0.1*inch))
+        except Exception as e:
+            # If QR generation fails, continue without it
+            print(f"Warning: QR code generation failed: {e}")
+        
         footer_style = ParagraphStyle(
             'Footer',
             parent=styles['Normal'],
@@ -291,7 +303,7 @@ class TranscriptService:
         )
         story.append(Paragraph(
             "This transcript is generated automatically from the UniPass participation database.<br/>"
-            "For verification, visit https://unipass.example.com/verify",
+            f"Scan QR code above or visit /ps1/transcript/{data['prn']} for verification",
             footer_style
         ))
         

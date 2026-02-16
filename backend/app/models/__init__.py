@@ -8,3 +8,4 @@ from app.models.student import Student
 from app.models.user import User, UserRole
 from app.models.participation_role import ParticipationRole, RoleType
 from app.models.student_snapshot import StudentSnapshot
+from app.models.volunteer import Volunteer

@@ -389,10 +389,10 @@ export default function PublicLandingPage() {
                 <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
               </svg>
             </div>
-            <h3>AI-Powered Analytics (Coming Soon)</h3>
+            <h3>AI-Powered Analytics</h3>
             <p>
-              Anomaly detection for suspicious check-ins, attendance prediction models,
-              student interest clustering, and NLP-based feedback sentiment analysis.
+              Anomaly detection for suspicious check-ins and NLP-based feedback sentiment analysis.
+              Production-ready machine learning modules analyzing attendance patterns and event feedback.
             </p>
           </div>
         </div>
@@ -401,11 +401,11 @@ export default function PublicLandingPage() {
       {/* AI/ML RESEARCH SECTION */}
       <section id="ai-research" className="ai-research-section">
         <div className="section-header">
-          <span className="section-badge">Research & Innovation</span>
-          <h2>AI/ML Modules (In Development)</h2>
+          <span className="section-badge">AI Intelligence</span>
+          <h2>Production AI/ML Modules</h2>
           <p>
-            Four machine learning models currently under research and development.
-            These are real, documented features—not hypothetical concepts.
+            Two production-ready machine learning models powering intelligent event management.
+            Real AI driving fraud prevention and feedback insights.
           </p>
         </div>
 
@@ -440,58 +440,6 @@ export default function PublicLandingPage() {
             <div className="module-number">02</div>
             <div className="module-icon">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-                <polyline points="17 6 23 6 23 12"/>
-              </svg>
-            </div>
-            <h3>Attendance Prediction Model</h3>
-            <p>
-              <strong>Goal:</strong> Forecast event turnout rates using historical patterns.
-            </p>
-            <ul>
-              <li>Predict attendance probability based on event type, time, location</li>
-              <li>Analyze past behavior (registration vs. actual show-up rates)</li>
-              <li>Consider student year, department, and academic calendar</li>
-              <li>Regression models (Linear, Ridge, Random Forest)</li>
-            </ul>
-            <div className="tech-stack">
-              <span>pandas</span>
-              <span>regression</span>
-              <span>time-series</span>
-            </div>
-          </div>
-
-          <div className="ai-module-card">
-            <div className="module-number">03</div>
-            <div className="module-icon">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-              </svg>
-            </div>
-            <h3>Student Interest Clustering</h3>
-            <p>
-              <strong>Goal:</strong> Group students by event preferences for targeted recommendations.
-            </p>
-            <ul>
-              <li>Cluster students based on attendance history (tech talks, cultural, sports)</li>
-              <li>Recommend personalized events using collaborative filtering</li>
-              <li>Identify student segments for marketing campaigns</li>
-              <li>K-Means clustering with feature engineering</li>
-            </ul>
-            <div className="tech-stack">
-              <span>k-means</span>
-              <span>pca</span>
-              <span>collaborative-filtering</span>
-            </div>
-          </div>
-
-          <div className="ai-module-card">
-            <div className="module-number">04</div>
-            <div className="module-icon">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                 <path d="M8 10h.01"/>
                 <path d="M12 10h.01"/>
@@ -523,9 +471,9 @@ export default function PublicLandingPage() {
             <line x1="12" y1="8" x2="12.01" y2="8"/>
           </svg>
           <p>
-            <strong>Note:</strong> These AI/ML modules power Cortex AI's intelligence layer and are
-            available in Pro and Enterprise plans. All features are production-ready and actively
-            deployed for institutional analytics and predictive modeling.
+            <strong>Note:</strong> These AI/ML modules are production-ready and power Cortex AI's
+            intelligence layer. Available in Pro and Enterprise plans for fraud prevention
+            and automated feedback analysis.
           </p>
         </div>
       </section>
@@ -655,8 +603,6 @@ export default function PublicLandingPage() {
                 <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>Certificate Transparency Ledger</li>
                 <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>API access for ERP integration</li>
                 <li className="ai-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>Fraud/anomaly detection engine</li>
-                <li className="ai-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>Attendance prediction models</li>
-                <li className="ai-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>Student clustering & profiling</li>
                 <li className="ai-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>Sentiment analysis (NLP)</li>
                 <li className="ai-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>Institutional trust index</li>
               </ul>
@@ -874,8 +820,8 @@ export default function PublicLandingPage() {
               <h3>Export Reports & AI Analysis</h3>
               <p>
                 Generate PDF/CSV reports with attendance statistics. AI modules
-                analyze patterns for anomaly detection, predict turnout rates,
-                cluster student interests, and perform sentiment analysis on feedback.
+                analyze patterns for anomaly detection using Isolation Forest ML,
+                and perform NLP-based sentiment analysis on event feedback.
               </p>
             </div>
           </div>
@@ -1047,7 +993,7 @@ export default function PublicLandingPage() {
             <div className="footer-column">
               <h3>Resources</h3>
               <ul>
-                <li><a href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/docs`} target="_blank">API Documentation</a></li>
+                <li><a href="/api/docs" target="_blank">API Documentation</a></li>
                 <li><a href="/login">Login Portal</a></li>
                 <li><a href="/signup">Create Account</a></li>
               </ul>

@@ -272,11 +272,11 @@ class ReconciliationService:
         ).distinct().all()
         certificates = self.db.query(Certificate.student_prn).filter_by(event_id=event_id).all()
         
-        # Combine all student PRNs
+        # Combine all student PRNs (filter out None values for non-student certificates)
         all_prns = set()
-        all_prns.update([t.student_prn for t in tickets])
-        all_prns.update([a.student_prn for a in attendances])
-        all_prns.update([c.student_prn for c in certificates])
+        all_prns.update([t.student_prn for t in tickets if t.student_prn])
+        all_prns.update([a.student_prn for a in attendances if a.student_prn])
+        all_prns.update([c.student_prn for c in certificates if c.student_prn])
         
         # Get conflicts for each student
         event_conflicts = []

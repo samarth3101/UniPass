@@ -131,7 +131,7 @@ export default function AttendancePage() {
 
   function exportCSV() {
     window.open(
-      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/export/attendance/event/${eventId}/csv`
+      `/api/export/attendance/event/${eventId}/csv`
     );
   }
 

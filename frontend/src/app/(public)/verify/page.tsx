@@ -35,7 +35,7 @@ export default function VerifyCertificatePage() {
 
     try {
       const response = await fetch(
-        `http://localhost:8000/ps1/verify/certificate/${certificateId.trim()}`
+        `/api/ps1/verify/certificate/${certificateId.trim()}`
       );
       
       if (!response.ok) {

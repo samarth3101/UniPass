@@ -19,6 +19,7 @@ from app.services.transcript_service import TranscriptService
 from app.services.snapshot_service import SnapshotService
 from app.services.audit_service import AuditService
 from app.services.fraud_detection_service import FraudDetectionService
+from app.services.qr_service import generate_certificate_qr_code, generate_transcript_qr_code
 from app.models.attendance import Attendance
 
 router = APIRouter(prefix="/ps1", tags=["PS1 - Participation Intelligence"])
@@ -91,6 +92,26 @@ class CorrectionRequest(BaseModel):
     old_value: str
     new_value: str
     reason: str
+
+
+class BulkResolutionAction(BaseModel):
+    """Action to take for a specific student's conflict"""
+    student_prn: str
+    action: str  # "add_attendance", "revoke_certificate", "ignore", "manual_review"
+    reason: Optional[str] = None
+
+
+class BulkResolutionRequest(BaseModel):
+    """Bulk conflict resolution request"""
+    actions: List[BulkResolutionAction]
+
+
+class BulkResolutionResponse(BaseModel):
+    """Response for bulk conflict resolution"""
+    total_actions: int
+    successful: int
+    failed: int
+    details: List[dict]
 
 
 # ============================================================================
@@ -901,3 +922,250 @@ async def detect_fraud(
     fraud_report = service.detect_fraud(event_id)
     
     return fraud_report
+
+
+# ============================================================================
+# FEATURE 3: QR CODE GENERATION FOR CERTIFICATES (PS1 Phase 3)
+# ============================================================================
+
+from fastapi.responses import StreamingResponse
+
+@router.get(
+    "/certificate/{certificate_id}/qr",
+    summary="Generate Certificate QR Code",
+    description="PS1 Feature 3: Generate QR code with verification link for a certificate"
+)
+async def get_certificate_qr_code(
+    certificate_id: str,
+    size: int = 300,
+    format: str = "png"
+):
+    """
+    Generate QR code for certificate verification.
+    QR code contains verification URL that can be scanned.
+    
+    Public endpoint - no authentication required for verification QR codes.
+    """
+    try:
+        if format == "base64":
+            qr_data = generate_certificate_qr_code(
+                certificate_id,
+                size=size,
+                return_base64=True
+            )
+            return {"qr_code": qr_data, "format": "base64"}
+        else:
+            qr_buffer = generate_certificate_qr_code(certificate_id, size=size)
+            return StreamingResponse(
+                qr_buffer,
+                media_type="image/png",
+                headers={
+                    "Content-Disposition": f"inline; filename=cert_{certificate_id}_qr.png"
+                }
+            )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate QR code: {str(e)}"
+        )
+
+
+@router.get(
+    "/transcript/{prn}/qr",
+    summary="Generate Transcript QR Code",
+    description="PS1 Feature 3: Generate QR code with transcript link for a student"
+)
+async def get_transcript_qr_code(
+    prn: str,
+    size: int = 200,
+    format: str = "png"
+):
+    """
+    Generate QR code for student transcript.
+    QR code contains transcript URL that can be scanned.
+    
+    Public endpoint - transcripts are publicly verifiable.
+    """
+    try:
+        if format == "base64":
+            qr_data = generate_transcript_qr_code(
+                prn,
+                size=size,
+                return_base64=True
+            )
+            return {"qr_code": qr_data, "format": "base64"}
+        else:
+            qr_buffer = generate_transcript_qr_code(prn, size=size)
+            return StreamingResponse(
+                qr_buffer,
+                media_type="image/png",
+                headers={
+                    "Content-Disposition": f"inline; filename=transcript_{prn}_qr.png"
+                }
+            )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate QR code: {str(e)}"
+        )
+
+
+# ============================================================================
+# FEATURE 1: BULK CONFLICT RESOLUTION (PS1 Phase 3)
+# ============================================================================
+
+@router.post(
+    "/conflicts/{event_id}/bulk-resolve",
+    response_model=BulkResolutionResponse,
+    summary="Bulk Resolve Conflicts",
+    description="PS1 Feature 1: Resolve multiple conflicts at once with specified actions"
+)
+async def bulk_resolve_conflicts(
+    event_id: int,
+    request: BulkResolutionRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Bulk resolve conflicts for an event.
+    
+    Supported actions:
+    - add_attendance: Add manual attendance record
+    - revoke_certificate: Revoke the certificate
+    - ignore: Mark as reviewed but no action taken
+    - manual_review: Flag for manual review later
+    
+    Returns summary of actions taken and any failures.
+    """
+    if current_user.role not in [UserRole.ADMIN, UserRole.ORGANIZER]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient permissions to bulk resolve conflicts"
+        )
+    
+    results = {
+        "total_actions": len(request.actions),
+        "successful": 0,
+        "failed": 0,
+        "details": []
+    }
+    
+    from app.models.event import Event
+    from app.models.ticket import Ticket
+    from app.models.audit_log import AuditLog
+    
+    event = db.query(Event).filter_by(id=event_id).first()
+    if not event:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Event not found"
+        )
+    
+    for action_item in request.actions:
+        try:
+            student_prn = action_item.student_prn
+            action = action_item.action
+            reason = action_item.reason or "Bulk conflict resolution"
+            
+            if action == "add_attendance":
+                ticket = db.query(Ticket).filter_by(
+                    event_id=event_id,
+                    student_prn=student_prn
+                ).first()
+                
+                if not ticket:
+                    results["details"].append({
+                        "student_prn": student_prn,
+                        "action": action,
+                        "status": "failed",
+                        "reason": "No registration found"
+                    })
+                    results["failed"] += 1
+                    continue
+                
+                existing = db.query(Attendance).filter_by(
+                    event_id=event_id,
+                    student_prn=student_prn,
+                    invalidated=False
+                ).first()
+                
+                if existing:
+                    results["successful"] += 1
+                    continue
+                
+                attendance = Attendance(
+                    ticket_id=ticket.id,
+                    event_id=event_id,
+                    student_prn=student_prn,
+                    scanned_at=datetime.now(timezone.utc),
+                    scan_source="admin_override",
+                    scanner_id=current_user.id,
+                    day_number=1
+                )
+                db.add(attendance)
+                
+                audit_log = AuditLog(
+                    event_id=event_id,
+                    user_id=current_user.id,
+                    action_type="bulk_attendance_added",
+                    details={"student_prn": student_prn, "reason": reason, "bulk_resolution": True}
+                )
+                db.add(audit_log)
+                
+                results["details"].append({"student_prn": student_prn, "action": action, "status": "success"})
+                results["successful"] += 1
+                
+            elif action == "revoke_certificate":
+                certificate = db.query(Certificate).filter_by(
+                    event_id=event_id,
+                    student_prn=student_prn,
+                    revoked=False
+                ).first()
+                
+                if not certificate:
+                    results["failed"] += 1
+                    continue
+                
+                certificate.revoked = True
+                certificate.revoked_at = datetime.now(timezone.utc)
+                certificate.revoked_by = current_user.id
+                certificate.revocation_reason = reason
+                
+                audit_log = AuditLog(
+                    event_id=event_id,
+                    user_id=current_user.id,
+                    action_type="bulk_certificate_revoked",
+                    details={"student_prn": student_prn, "reason": reason, "bulk_resolution": True}
+                )
+                db.add(audit_log)
+                
+                results["details"].append({"student_prn": student_prn, "action": action, "status": "success"})
+                results["successful"] += 1
+                
+            elif action in ["ignore", "manual_review"]:
+                audit_log = AuditLog(
+                    event_id=event_id,
+                    user_id=current_user.id,
+                    action_type=f"bulk_{action}",
+                    details={"student_prn": student_prn, "reason": reason}
+                )
+                db.add(audit_log)
+                results["successful"] += 1
+                
+            else:
+                results["failed"] += 1
+                
+        except Exception as e:
+            results["details"].append({"student_prn": action_item.student_prn, "status": "failed", "reason": str(e)})
+            results["failed"] += 1
+    
+    try:
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to commit: {str(e)}"
+        )
+    
+    return BulkResolutionResponse(**results)

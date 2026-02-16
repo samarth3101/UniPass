@@ -1,6 +1,13 @@
 """
 Certificate Service
 Handles certificate generation and distribution for event attendees
+
+Email Retry System:
+- Certificates track email_sent status in the database
+- If SMTP fails, email_sent remains False
+- Use resend_failed_certificate_emails() to retry failed emails
+- Only attempts to send emails where email_sent=False
+- Automatically updates email_sent=True on successful delivery
 """
 
 import uuid
@@ -288,3 +295,101 @@ def is_student_eligible_for_certificate(db: Session, event_id: int, student_prn:
     
     # Student must attend all days to be eligible
     return attended_days >= total_days
+
+
+def resend_failed_certificate_emails(db: Session, event_id: int) -> Dict:
+    """
+    Resend certificate emails that previously failed to send
+    Only attempts to send emails for certificates where email_sent=False
+    
+    Returns:
+        Dictionary with results including success count and failures
+    """
+    # Get event details
+    event = db.query(Event).filter(Event.id == event_id).first()
+    if not event:
+        return {
+            "success": False,
+            "error": "Event not found"
+        }
+    
+    # Get certificates where email was not sent
+    failed_certificates = db.query(Certificate).filter(
+        Certificate.event_id == event_id,
+        Certificate.email_sent == False,
+        Certificate.revoked == False  # Don't send emails for revoked certificates
+    ).all()
+    
+    if not failed_certificates:
+        return {
+            "success": True,
+            "message": "No failed emails to resend",
+            "total_attempted": 0,
+            "emails_sent": 0,
+            "still_failed": 0
+        }
+    
+    emails_sent = 0
+    still_failed = 0
+    failed_details = []
+    
+    for certificate in failed_certificates:
+        # Get student details
+        student = db.query(Student).filter(Student.prn == certificate.student_prn).first()
+        
+        if not student or not student.email:
+            still_failed += 1
+            failed_details.append({
+                "prn": certificate.student_prn,
+                "certificate_id": certificate.certificate_id,
+                "reason": "No email address"
+            })
+            continue
+        
+        try:
+            event_date = event.start_time.strftime('%B %d, %Y')
+            
+            # Attempt to send email
+            email_sent_success = send_certificate_email(
+                to_email=student.email,
+                student_name=student.name,
+                event_title=event.title,
+                event_location=event.location,
+                event_date=event_date,
+                certificate_id=certificate.certificate_id
+            )
+            
+            if email_sent_success:
+                # Mark as sent
+                certificate.email_sent = True
+                certificate.email_sent_at = datetime.utcnow()
+                emails_sent += 1
+            else:
+                still_failed += 1
+                failed_details.append({
+                    "prn": certificate.student_prn,
+                    "certificate_id": certificate.certificate_id,
+                    "email": student.email,
+                    "reason": "SMTP connection failed"
+                })
+        
+        except Exception as e:
+            still_failed += 1
+            failed_details.append({
+                "prn": certificate.student_prn,
+                "certificate_id": certificate.certificate_id,
+                "email": student.email,
+                "reason": str(e)
+            })
+    
+    # Commit changes
+    db.commit()
+    
+    return {
+        "success": True,
+        "message": f"Resent {emails_sent} certificate emails",
+        "total_attempted": len(failed_certificates),
+        "emails_sent": emails_sent,
+        "still_failed": still_failed,
+        "failed_details": failed_details if failed_details else []
+    }

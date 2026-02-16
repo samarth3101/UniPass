@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { isAuthenticated, getUser } from "@/lib/auth";
 import { canAccessRoute, getRedirectForRole, isPublicRoute } from "@/lib/roleGuard";
@@ -19,8 +19,12 @@ export default function RoleGuard({ children }: RoleGuardProps) {
   const pathname = usePathname();
   const [isChecking, setIsChecking] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const redirecting = useRef(false);
 
   useEffect(() => {
+    // Prevent multiple redirects
+    if (redirecting.current) return;
+    
     async function checkAccess() {
       // Check if route is public (no auth required)
       if (isPublicRoute(pathname)) {
@@ -34,8 +38,12 @@ export default function RoleGuard({ children }: RoleGuardProps) {
       const user = getUser();
 
       if (!authenticated) {
+        // Don't redirect if already on login page
+        if (pathname !== "/login") {
+          redirecting.current = true;
+          router.replace("/login");
+        }
         setIsChecking(false);
-        router.push("/login");
         return;
       }
 
@@ -43,9 +51,12 @@ export default function RoleGuard({ children }: RoleGuardProps) {
       const hasAccess = canAccessRoute(pathname);
 
       if (!hasAccess) {
-        setIsChecking(false);
         const redirectPath = getRedirectForRole(pathname);
-        router.push(redirectPath);
+        if (pathname !== redirectPath) {
+          redirecting.current = true;
+          router.replace(redirectPath);
+        }
+        setIsChecking(false);
         return;
       }
 
@@ -58,7 +69,7 @@ export default function RoleGuard({ children }: RoleGuardProps) {
   }, [pathname, router]);
 
   // Show loading state while checking
-  if (isChecking || !isAuthorized) {
+  if (isChecking) {
     return (
       <div style={{
         display: "flex",
@@ -71,6 +82,11 @@ export default function RoleGuard({ children }: RoleGuardProps) {
         Checking permissions...
       </div>
     );
+  }
+
+  // If not authorized, show nothing (redirect is in progress)
+  if (!isAuthorized) {
+    return null;
   }
 
   return <>{children}</>;

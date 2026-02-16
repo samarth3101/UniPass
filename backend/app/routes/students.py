@@ -156,7 +156,7 @@ async def bulk_import_students_csv(
                     prn=row['prn'].strip(),
                     name=row['name'].strip(),
                     email=row['email'].strip() if row['email'] else None,
-                    department=row['department'].strip() if row['department'] else None,
+                    branch=row['department'].strip() if row['department'] else None,
                     year=year
                 )
                 db.add(new_student)
@@ -210,6 +210,73 @@ def list_students(
         "skip": skip,
         "limit": limit,
         "students": students
+    }
+
+
+@router.get("/stats/overview", response_model=dict)
+def get_student_statistics(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Get student statistics for visualization
+    Returns department-wise breakdown, year-wise distribution, etc.
+    """
+    from sqlalchemy import func
+    
+    # Total students
+    total_students = db.query(Student).count()
+    
+    # Department-wise distribution (branch field in DB)
+    dept_stats = db.query(
+        Student.branch,
+        func.count(Student.id).label('count')
+    ).filter(
+        Student.branch.isnot(None),
+        Student.branch != ''
+    ).group_by(
+        Student.branch
+    ).order_by(
+        func.count(Student.id).desc()
+    ).all()
+    
+    department_distribution = [
+        {"name": dept or "Unknown", "count": count}
+        for dept, count in dept_stats
+    ]
+    
+    # Year-wise distribution
+    year_stats = db.query(
+        Student.year,
+        func.count(Student.id).label('count')
+    ).filter(
+        Student.year.isnot(None)
+    ).group_by(
+        Student.year
+    ).order_by(
+        Student.year
+    ).all()
+    
+    year_distribution = [
+        {"year": year, "count": count}
+        for year, count in year_stats
+    ]
+    
+    # Students with/without email
+    with_email = db.query(Student).filter(
+        Student.email.isnot(None),
+        Student.email != ''
+    ).count()
+    without_email = total_students - with_email
+    
+    return {
+        "total_students": total_students,
+        "department_distribution": department_distribution,
+        "year_distribution": year_distribution,
+        "email_stats": {
+            "with_email": with_email,
+            "without_email": without_email
+        }
     }
 
 

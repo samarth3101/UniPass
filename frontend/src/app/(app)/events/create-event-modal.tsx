@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/services/api";
 import { toast } from "@/components/Toast";
@@ -16,10 +16,19 @@ export default function CreateEventModal({ onClose }: Props) {
     title: "",
     description: "",
     location: "",
+    guest_speaker: "",
     start_time: "",
     end_time: "",
   });
   const [loading, setLoading] = useState(false);
+
+  // Manage body overflow
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
 
   async function handleCreate() {
     // Validation
@@ -48,7 +57,7 @@ export default function CreateEventModal({ onClose }: Props) {
         end_time: endDate.toISOString(),
       };
       
-      await api.post("/events", payload);
+      await api.post("/events/", payload);
       toast.success("Event created successfully");
       router.refresh();
       onClose();
@@ -81,6 +90,12 @@ export default function CreateEventModal({ onClose }: Props) {
           placeholder="Location"
           value={form.location}
           onChange={(e) => setForm({ ...form, location: e.target.value })}
+        />
+
+        <input
+          placeholder="Guest Speaker / Special Guest (Optional)"
+          value={form.guest_speaker}
+          onChange={(e) => setForm({ ...form, guest_speaker: e.target.value })}
         />
 
         <label>Start Time</label>

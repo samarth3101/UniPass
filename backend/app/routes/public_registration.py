@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -16,6 +16,7 @@ def register_student(
     share_slug: str,
     prn: str,
     name: str,
+    background_tasks: BackgroundTasks,
     email: str | None = None,
     branch: str | None = None,
     year: int | None = None,
@@ -101,21 +102,18 @@ def register_student(
     db.commit()
     db.refresh(ticket)
 
-    # 6. Send ticket email to student
+    # 6. Send ticket email to student in background (non-blocking)
     if email:
-        try:
-            send_ticket_email(
-                to_email=email,
-                student_name=name,
-                event_title=event.title,
-                event_location=event.location,
-                event_start_time=event.start_time,
-                event_end_time=event.end_time,
-                ticket_token=token
-            )
-        except Exception as e:
-            # Don't fail registration if email fails
-            print(f"Warning: Failed to send ticket email: {str(e)}")
+        background_tasks.add_task(
+            send_ticket_email,
+            to_email=email,
+            student_name=name,
+            event_title=event.title,
+            event_location=event.location,
+            event_start_time=event.start_time,
+            event_end_time=event.end_time,
+            ticket_token=token
+        )
 
     # 7. Return ticket with full event and student details
     return {

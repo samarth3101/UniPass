@@ -49,6 +49,14 @@ export default function FeedbackModal({ eventId, eventTitle, onClose }: Props) {
   const [activeTab, setActiveTab] = useState<"summary" | "responses">("summary");
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
+  // Manage body overflow
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
+
   useEffect(() => {
     fetchFeedbackData();
   }, [eventId]);

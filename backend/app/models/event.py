@@ -21,6 +21,7 @@ class Event(Base):
     event_type = Column(String, nullable=True, index=True)  # workshop, seminar, hackathon, etc.
     capacity = Column(Integer, nullable=True)  # Max attendees for attendance rate calculations
     department = Column(String, nullable=True, index=True)  # CS, IT, ENTC, etc.
+    guest_speaker = Column(String, nullable=True)  # Guest speaker or special guest name
     
     # Multi-Day Event Support
     total_days = Column(Integer, default=1, nullable=False)  # Number of days event spans (default: 1)

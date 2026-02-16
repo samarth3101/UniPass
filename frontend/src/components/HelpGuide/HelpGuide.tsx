@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { HelpGuideContent } from './helpGuideConfig';
 import './HelpGuide.scss';
 
@@ -10,6 +10,26 @@ interface HelpGuideProps {
 
 export default function HelpGuide({ content }: HelpGuideProps) {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+
+  // Manage body overflow to prevent background scrolling
+  useEffect(() => {
+    if (isHelpOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isHelpOpen]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      // Ensure overflow is restored if component unmounts while help is open
+      document.body.style.overflow = '';
+    };
+  }, []);
 
   const renderContent = (section: any) => {
     if (section.type === 'paragraph') {

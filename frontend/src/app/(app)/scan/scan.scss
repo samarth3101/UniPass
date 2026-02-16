@@ -175,9 +175,27 @@
   object-fit: cover;
 }
 
+.qr-video {
+  width: 100%;
+  border-radius: 12px;
+  background: black;
+  max-height: 400px;
+  object-fit: cover;
+}
+
 .camera-controls {
   display: flex;
   gap: 10px;
+}
+
+.scan-hint {
+  text-align: center;
+  color: #666;
+  font-size: 13px;
+  margin: 0;
+  padding: 8px;
+  background: #f7fafc;
+  border-radius: 6px;
 }
 
 .capture-btn {

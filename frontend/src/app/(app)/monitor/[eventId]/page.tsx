@@ -33,7 +33,7 @@ export default function LiveMonitorPage() {
   useEffect(() => {
     // Connect to SSE endpoint
     const eventSource = new EventSource(
-      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/monitor/event/${eventId}`
+      `/api/monitor/event/${eventId}`
     );
 
     eventSource.onopen = () => {

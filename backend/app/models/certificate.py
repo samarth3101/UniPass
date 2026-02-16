@@ -1,24 +1,39 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean, Text
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean, Text, Enum as SQLEnum
 from sqlalchemy.orm import relationship
 from app.db.base import Base
 from datetime import datetime, timezone
 import hashlib
 import os
+from enum import Enum
+
+class CertificateRole(str, Enum):
+    """Certificate role types"""
+    ATTENDEE = "attendee"
+    ORGANIZER = "organizer"
+    SCANNER = "scanner"
+    VOLUNTEER = "volunteer"
 
 class Certificate(Base):
     """
-    Track certificates issued to students for attending events.
-    Ensures certificates are sent only once per student per event.
+    Track certificates issued to students/volunteers for events.
+    Supports multiple role types with unique certificate designs.
     """
     __tablename__ = "certificates"
 
     id = Column(Integer, primary_key=True, index=True)
     event_id = Column(Integer, ForeignKey("events.id"), nullable=False, index=True)
-    student_prn = Column(String, nullable=False, index=True)
+    student_prn = Column(String, nullable=True, index=True)  # Nullable for volunteers
     
     # Certificate details
     certificate_id = Column(String, unique=True, index=True, nullable=False)  # Unique certificate identifier
     issued_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    # Role-based certificates
+    role_type = Column(String, default="attendee", nullable=False, index=True)  # attendee, organizer, scanner, volunteer
+    
+    # For non-student certificates (volunteers, organizers, scanners)
+    recipient_name = Column(String, nullable=True)
+    recipient_email = Column(String, nullable=True)
     
     # Email delivery tracking
     email_sent = Column(Boolean, default=False)

@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import api from "@/services/api";
+import { toast } from "@/components/Toast";
 import "./students.scss";
 
 interface ImportResult {
@@ -10,11 +12,50 @@ interface ImportResult {
   errors: Array<{ row?: number; prn?: string; error: string }>;
 }
 
+interface DepartmentStat {
+  name: string;
+  count: number;
+}
+
+interface YearStat {
+  year: number;
+  count: number;
+}
+
+interface StudentStats {
+  total_students: number;
+  department_distribution: DepartmentStat[];
+  year_distribution: YearStat[];
+  email_stats: {
+    with_email: number;
+    without_email: number;
+  };
+}
+
 export default function StudentsPage() {
   const [file, setFile] = useState<File | null>(null);
   const [importing, setImporting] = useState(false);
   const [result, setResult] = useState<ImportResult | null>(null);
   const [error, setError] = useState("");
+  const [stats, setStats] = useState<StudentStats | null>(null);
+  const [loadingStats, setLoadingStats] = useState(false);
+
+  // Load statistics on mount and after successful import
+  useEffect(() => {
+    loadStatistics();
+  }, []);
+
+  const loadStatistics = async () => {
+    setLoadingStats(true);
+    try {
+      const data = await api.get("/students/stats/overview");
+      setStats(data);
+    } catch (err: any) {
+      console.error("Failed to load statistics:", err);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -45,7 +86,7 @@ export default function StudentsPage() {
       formData.append("file", file);
 
       const token = localStorage.getItem("unipass_token");
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const apiUrl = '/api';
       const response = await fetch(`${apiUrl}/students/bulk-import-csv`, {
         method: "POST",
         headers: {
@@ -61,6 +102,10 @@ export default function StudentsPage() {
 
       const data = await response.json();
       setResult(data.results);
+      toast.success(`Successfully imported ${data.results.imported} students!`);
+      
+      // Reload statistics
+      await loadStatistics();
       
       // Clear file input after successful import
       if (data.results.imported > 0) {
@@ -70,6 +115,7 @@ export default function StudentsPage() {
       }
     } catch (err: any) {
       setError(err.message || "Failed to upload file");
+      toast.error(err.message || "Failed to upload file");
     } finally {
       setImporting(false);
     }
@@ -201,6 +247,82 @@ PRN004,Alice Williams,alice@university.edu,Civil Engineering,1`;
           </div>
         )}
       </div>
+
+      {stats && (
+        <div className="card">
+          <div className="card-header">
+            <h2>Student Statistics</h2>
+            {loadingStats && <div className="spinner-small"></div>}
+          </div>
+
+          <div className="stats-overview">
+            <div className="stat-card primary">
+              <div className="stat-value">{stats.total_students}</div>
+              <div className="stat-label">Total Students</div>
+            </div>
+            <div className="stat-card success">
+              <div className="stat-value">{stats.email_stats.with_email}</div>
+              <div className="stat-label">With Email</div>
+            </div>
+            <div className="stat-card warning">
+              <div className="stat-value">{stats.email_stats.without_email}</div>
+              <div className="stat-label">Without Email</div>
+            </div>
+          </div>
+
+          {stats.department_distribution.length > 0 && (
+            <div className="chart-section">
+              <h3>Department Distribution</h3>
+              <div className="bar-chart">
+                {stats.department_distribution.map((dept, idx) => {
+                  const maxCount = Math.max(...stats.department_distribution.map(d => d.count));
+                  const percentage = (dept.count / maxCount) * 100;
+                  return (
+                    <div key={idx} className="bar-item">
+                      <div className="bar-label">{dept.name || 'Not Specified'}</div>
+                      <div className="bar-container">
+                        <div 
+                          className="bar-fill" 
+                          style={{ width: `${percentage}%` }}
+                        >
+                          <span className="bar-count">{dept.count}</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {stats.year_distribution.length > 0 && (
+            <div className="chart-section">
+              <h3>Year Distribution</h3>
+              <div className="bar-chart">
+                {stats.year_distribution.map((yearData, idx) => {
+                  const maxCount = Math.max(...stats.year_distribution.map(y => y.count));
+                  const percentage = (yearData.count / maxCount) * 100;
+                  return (
+                    <div key={idx} className="bar-item">
+                      <div className="bar-label">
+                        {yearData.year ? `Year ${yearData.year}` : 'Not Specified'}
+                      </div>
+                      <div className="bar-container">
+                        <div 
+                          className="bar-fill year-bar" 
+                          style={{ width: `${percentage}%` }}
+                        >
+                          <span className="bar-count">{yearData.count}</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="info-card">
         <h3>CSV Format Requirements</h3>

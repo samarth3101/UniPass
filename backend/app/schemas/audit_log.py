@@ -21,9 +21,13 @@ class AuditLogResponse(AuditLogBase):
 
     @field_serializer('timestamp')
     def serialize_dt(self, dt: datetime, _info):
-        if dt and dt.tzinfo is None:
-            # If datetime is naive, assume it's UTC
-            dt = dt.replace(tzinfo=timezone.utc)
+        if dt:
+            # Convert to UTC if it has timezone info
+            if dt.tzinfo is not None:
+                dt = dt.astimezone(timezone.utc)
+            else:
+                # If naive, assume UTC
+                dt = dt.replace(tzinfo=timezone.utc)
         return dt.isoformat() if dt else None
 
     class Config:

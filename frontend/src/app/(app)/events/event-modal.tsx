@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/services/api";
 import { isAdmin } from "@/lib/auth";
 import AuditLogs from "./audit-logs";
 import FeedbackModal from "./feedback-modal";
+import CertificatePushModal from "@/components/CertificatePushModal/CertificatePushModal";
 import { toast } from "@/components/Toast";
 
 type Event = {
@@ -52,9 +53,19 @@ export default function EventModal({ event, onClose }: Props) {
   const [sendingEmail, setSendingEmail] = useState(false);
   const [certificateStats, setCertificateStats] = useState<any>(null);
   const [pushingCertificates, setPushingCertificates] = useState(false);
+  const [resendingEmails, setResendingEmails] = useState(false);
   const [showCertificateInfo, setShowCertificateInfo] = useState(false);
   const [sendingFeedback, setSendingFeedback] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [showCertificatePushModal, setShowCertificatePushModal] = useState(false);
+
+  // Manage body overflow
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
 
   async function handleUpdate() {
     setLoading(true);
@@ -113,7 +124,7 @@ export default function EventModal({ event, onClose }: Props) {
   }
 
   function exportCSV() {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    const apiUrl = '/api';
     window.open(
       `${apiUrl}/export/attendance/event/${event.id}/csv`,
       "_blank"
@@ -127,7 +138,7 @@ export default function EventModal({ event, onClose }: Props) {
   async function generateReport() {
     try {
       const token = localStorage.getItem("unipass_token");
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const apiUrl = '/api';
       const response = await fetch(`${apiUrl}/events/${event.id}/report`, {
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -195,7 +206,18 @@ export default function EventModal({ event, onClose }: Props) {
     }
 
     if (certificateStats.pending_certificates === 0) {
-      toast.info("No new certificates to send. All eligible students have already received certificates.");
+      // Check if certificates exist but emails failed
+      const emailFailures = certificateStats.total_certificates_issued - certificateStats.certificates_emailed;
+      
+      if (emailFailures > 0) {
+        toast.error(
+          `Certificates already created but ${emailFailures} email(s) failed to send! ` +
+          `SMTP connection issue detected. Check network/firewall settings. ` +
+          `Certificates are valid but students didn't receive emails.`
+        );
+      } else {
+        toast.info("All eligible students have already received certificates.");
+      }
       return;
     }
 
@@ -208,9 +230,29 @@ export default function EventModal({ event, onClose }: Props) {
       const result = await api.post(`/certificates/event/${event.id}/push`);
       
       if (result.success) {
-        const message = `Successfully issued ${result.certificates_issued} certificate(s). ` +
-                       `Emails sent: ${result.emails_sent}, Failed: ${result.emails_failed}`;
-        toast.success(message);
+        // Check if there were email failures
+        if (result.emails_failed > 0) {
+          // Partial failure - some emails didn't send
+          if (result.emails_sent === 0) {
+            // All emails failed
+            toast.error(
+              `Certificates created but ALL emails failed to send! ` +
+              `Issued: ${result.certificates_issued}, Email failures: ${result.emails_failed}. ` +
+              `Check SMTP configuration.`
+            );
+          } else {
+            // Some emails failed
+            toast.warning(
+              `Partial success: ${result.emails_sent} emails sent, but ${result.emails_failed} failed. ` +
+              `Certificates issued: ${result.certificates_issued}. Check SMTP configuration.`
+            );
+          }
+        } else {
+          // Complete success
+          toast.success(
+            `Success! Issued ${result.certificates_issued} certificate(s) and sent ${result.emails_sent} email(s).`
+          );
+        }
         
         // Reload stats
         await loadCertificateStats();
@@ -220,6 +262,81 @@ export default function EventModal({ event, onClose }: Props) {
       toast.error(error.response?.data?.detail || "Failed to push certificates");
     } finally {
       setPushingCertificates(false);
+    }
+  }
+
+  async function sendFeedbackRequests() {
+    if (!confirm(`Send feedback request emails to all attended students?`)) {
+      return;
+    }
+
+    setSendingFeedback(true);
+    try {
+      const result = await api.post(`/feedback/send-requests/${event.id}`);
+      
+      const message = `Feedback requests sent! ` +
+                     `Emails sent: ${result.emails_sent}, Failed: ${result.emails_failed}` +
+                     (result.already_submitted > 0 ? `, Already submitted: ${result.already_submitted}` : '');
+      toast.success(message);
+    } catch (error: any) {
+      console.error("Error sending feedback requests:", error);
+      toast.error(error.response?.data?.detail || "Failed to send feedback requests");
+    } finally {
+      setSendingFeedback(false);
+    }
+  }
+
+  async function resendFailedCertificateEmails() {
+    if (!certificateStats) {
+      await loadCertificateStats();
+      return;
+    }
+
+    const failedCount = certificateStats.total_certificates_issued - certificateStats.certificates_emailed;
+    
+    if (failedCount === 0) {
+      toast.info("No failed emails to resend. All certificates have been emailed successfully.");
+      return;
+    }
+
+    if (!confirm(`Retry sending ${failedCount} failed certificate email(s)?`)) {
+      return;
+    }
+
+    setResendingEmails(true);
+    try {
+      const result = await api.post(`/certificates/event/${event.id}/resend-failed`);
+      
+      if (result.success) {
+        if (result.emails_sent > 0) {
+          if (result.still_failed > 0) {
+            // Partial success
+            toast.warning(
+              `Resent ${result.emails_sent} email(s), but ${result.still_failed} still failed. ` +
+              `Check SMTP connection or try again later.`
+            );
+          } else {
+            // Complete success
+            toast.success(
+              `Successfully resent ${result.emails_sent} certificate email(s)!`
+            );
+          }
+        } else {
+          // All failed again
+          toast.error(
+            `All ${result.total_attempted} email(s) failed again. ` +
+            `Check SMTP configuration and network connection.`
+          );
+        }
+        
+        // Reload stats
+        await loadCertificateStats();
+      }
+    } catch (error: any) {
+      console.error("Error resending emails:", error);
+      toast.error(error.response?.data?.detail || "Failed to resend emails");
+    } finally {
+      setResendingEmails(false);
     }
   }
 
@@ -300,12 +417,12 @@ export default function EventModal({ event, onClose }: Props) {
             Email Teacher
           </button>
 
-          <button type="button" onClick={pushCertificates} className="control-btn certificate-btn" disabled={pushingCertificates}>
+          <button type="button" onClick={() => setShowCertificatePushModal(true)} className="control-btn certificate-btn">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
               <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
-            {pushingCertificates ? 'Pushing...' : 'Push Certificates'}
+            Push Certificates
           </button>
 
           <button type="button" onClick={sendFeedbackRequests} className="control-btn feedback-btn" disabled={sendingFeedback}>
@@ -326,59 +443,6 @@ export default function EventModal({ event, onClose }: Props) {
             View Feedback
           </button>
         </div>
-
-        {showCertificateInfo && certificateStats && (
-          <div style={{
-            margin: '20px 0',
-            padding: '20px',
-            background: '#fef3c7',
-            border: '2px solid #f59e0b',
-            borderRadius: '12px'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h4 style={{ margin: 0, color: '#92400e' }}>Certificate Status</h4>
-              <button 
-                onClick={() => setShowCertificateInfo(false)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#78350f',
-                  cursor: 'pointer',
-                  fontSize: '20px',
-                  lineHeight: '1',
-                  padding: '0 4px'
-                }}
-              >
-                ×
-              </button>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px' }}>
-              <div style={{ background: 'white', padding: '12px', borderRadius: '8px' }}>
-                <div style={{ color: '#78350f', fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>Total Registered</div>
-                <div style={{ color: '#92400e', fontSize: '24px', fontWeight: 700 }}>{certificateStats.total_registered}</div>
-              </div>
-              <div style={{ background: 'white', padding: '12px', borderRadius: '8px' }}>
-                <div style={{ color: '#78350f', fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>Attended</div>
-                <div style={{ color: '#92400e', fontSize: '24px', fontWeight: 700 }}>{certificateStats.total_attended}</div>
-              </div>
-              <div style={{ background: 'white', padding: '12px', borderRadius: '8px' }}>
-                <div style={{ color: '#78350f', fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>Certificates Issued</div>
-                <div style={{ color: '#92400e', fontSize: '24px', fontWeight: 700 }}>{certificateStats.total_certificates_issued}</div>
-              </div>
-              <div style={{ background: certificateStats.pending_certificates > 0 ? '#dcfce7' : 'white', padding: '12px', borderRadius: '8px' }}>
-                <div style={{ color: '#78350f', fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>Pending</div>
-                <div style={{ color: certificateStats.pending_certificates > 0 ? '#16a34a' : '#92400e', fontSize: '24px', fontWeight: 700 }}>{certificateStats.pending_certificates}</div>
-              </div>
-            </div>
-            {certificateStats.pending_certificates > 0 && (
-              <div style={{ marginTop: '12px', padding: '12px', background: '#dcfce7', borderRadius: '8px' }}>
-                <p style={{ margin: 0, color: '#166534', fontSize: '13px' }}>
-                  🎓 {certificateStats.pending_certificates} student(s) are eligible for certificates. Click "Push Certificates" to send them.
-                </p>
-              </div>
-            )}
-          </div>
-        )}
 
         {showEmailForm && (
           <div style={{
@@ -623,6 +687,17 @@ export default function EventModal({ event, onClose }: Props) {
           eventId={event.id}
           eventTitle={event.title}
           onClose={() => setShowFeedbackModal(false)}
+        />
+      )}
+
+      {showCertificatePushModal && (
+        <CertificatePushModal
+          eventId={event.id}
+          eventTitle={event.title}
+          onClose={() => setShowCertificatePushModal(false)}
+          onSuccess={() => {
+            setShowCertificatePushModal(false);
+          }}
         />
       )}
     </div>

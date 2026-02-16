@@ -329,8 +329,8 @@ def send_ticket_email(
         qr_image.add_header('Content-Disposition', 'inline', filename='qr_code.png')
         msg.attach(qr_image)
         
-        # Send email
-        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+        # Send email with timeout (increased to 10 seconds for reliability)
+        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
             server.starttls()
             server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
             server.send_message(msg)
@@ -515,8 +515,8 @@ def send_teacher_email(
         html_part = MIMEText(html_body, 'html')
         msg.attach(html_part)
         
-        # Send email
-        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+        # Send email with timeout (increased to 10 seconds for reliability)
+        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
             server.starttls()
             server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
             server.send_message(msg)
@@ -534,11 +534,51 @@ def create_certificate_email_html(
     event_title: str,
     event_location: str,
     event_date: str,
-    certificate_id: str
+    certificate_id: str,
+    role_type: str = "attendee"
 ) -> str:
     """
     Create beautiful HTML email template for event certificate
+    Role-aware: attendee, organizer, scanner, volunteer
     """
+    
+    # Role-specific content
+    role_config = {
+        "attendee": {
+            "badge": "🎓 CERTIFICATE",
+            "title": "Certificate of Participation",
+            "greeting": "Congratulations!",
+            "message": "We are pleased to inform you that you have successfully completed your participation in:",
+            "achievement": "🌟 Thank you for your active participation! This certificate recognizes your attendance and engagement in the event.",
+            "gradient": "linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)"
+        },
+        "organizer": {
+            "badge": "🏆 APPRECIATION",
+            "title": "Certificate of Appreciation - Event Organizer",
+            "greeting": "Outstanding Leadership!",
+            "message": "This certificate recognizes your exceptional contribution as an organizer for:",
+            "achievement": "👏 Thank you for your dedicated service in organizing this event! Your leadership and commitment made this event a success.",
+            "gradient": "linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)"
+        },
+        "scanner": {
+            "badge": "✅ APPRECIATION",
+            "title": "Certificate of Appreciation - Event Scanner",
+            "greeting": "Excellent Service!",
+            "message": "This certificate recognizes your valuable contribution as a scanner for:",
+            "achievement": "🙌 Thank you for your dedicated service! Your efficient attendance management ensured smooth event operations.",
+            "gradient": "linear-gradient(135deg, #10b981 0%, #059669 100%)"
+        },
+        "volunteer": {
+            "badge": "❤️ APPRECIATION",
+            "title": "Certificate of Appreciation - Volunteer",
+            "greeting": "Heartfelt Thanks!",
+            "message": "This certificate recognizes your generous volunteercontribution for:",
+            "achievement": "💝 Thank you for volunteering your time and effort! Your selfless service made a meaningful difference to this event's success.",
+            "gradient": "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)"
+        }
+    }
+    
+    config = role_config.get(role_type, role_config["attendee"])
     html = f"""
     <!DOCTYPE html>
     <html lang="en">
@@ -551,12 +591,12 @@ def create_certificate_email_html(
         <div style="max-width: 700px; margin: 40px auto; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);">
             
             <!-- Header -->
-            <div style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 40px 30px; text-align: center;">
+            <div style="background: {config['gradient']}; padding: 40px 30px; text-align: center;">
                 <div style="display: inline-block; background: white; padding: 12px 24px; border-radius: 50px; margin-bottom: 20px;">
-                    <span style="color: #4f46e5; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">🎓 CERTIFICATE</span>
+                    <span style="color: #4f46e5; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">{config['badge']}</span>
                 </div>
-                <h1 style="margin: 0; color: white; font-size: 32px; font-weight: 800; line-height: 1.3;">Congratulations!</h1>
-                <p style="margin: 10px 0 0; color: rgba(255,255,255,0.9); font-size: 16px;">Certificate of Participation</p>
+                <h1 style="margin: 0; color: white; font-size: 32px; font-weight: 800; line-height: 1.3;">{config['greeting']}</h1>
+                <p style="margin: 10px 0 0; color: rgba(255,255,255,0.9); font-size: 16px;">{config['title']}</p>
             </div>
             
             <!-- Content -->
@@ -565,7 +605,7 @@ def create_certificate_email_html(
                     Dear <strong>{student_name}</strong>,
                 </p>
                 <p style="margin: 0 0 30px; color: #475569; font-size: 15px; line-height: 1.6;">
-                    We are pleased to inform you that you have successfully completed your participation in:
+                    {config['message']}
                 </p>
                 
                 <!-- Certificate Box -->
@@ -598,7 +638,7 @@ def create_certificate_email_html(
                 <!-- Achievement Message -->
                 <div style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-left: 4px solid #10b981; padding: 20px; border-radius: 10px; margin-bottom: 30px;">
                     <p style="margin: 0; color: #065f46; font-size: 15px; line-height: 1.6; font-weight: 500;">
-                        🌟 Thank you for your active participation! This certificate recognizes your attendance and engagement in the event.
+                        {config['achievement']}
                     </p>
                 </div>
                 
@@ -638,7 +678,8 @@ def send_certificate_email(
     event_title: str,
     event_location: str,
     event_date: str,
-    certificate_id: str
+    certificate_id: str,
+    role_type: str = "attendee"
 ) -> bool:
     """
     Send certificate email to student
@@ -663,15 +704,16 @@ def send_certificate_email(
             event_title=event_title,
             event_location=event_location,
             event_date=event_date,
-            certificate_id=certificate_id
+            certificate_id=certificate_id,
+            role_type=role_type
         )
         
         # Attach HTML
         html_part = MIMEText(html_body, 'html')
         msg.attach(html_part)
         
-        # Send email
-        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+        # Send email with timeout (increased to 10 seconds for reliability)
+        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
             server.starttls()
             server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
             server.send_message(msg)
@@ -960,8 +1002,8 @@ def send_feedback_request_email(
         html_part = MIMEText(html_body, 'html')
         msg.attach(html_part)
         
-        # Send email
-        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+        # Send email with timeout (increased to 10 seconds for reliability)
+        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
             server.starttls()
             server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
             server.send_message(msg)

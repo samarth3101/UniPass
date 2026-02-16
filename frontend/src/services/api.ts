@@ -1,4 +1,6 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "/api";
+import { getApiUrl } from '@/config/api';
+
+const API_BASE = getApiUrl();
 
 /* ======================
    RAW FETCH WRAPPER
@@ -30,6 +32,16 @@ async function request(
     });
 
     if (!res.ok) {
+      // Handle 401 Unauthorized - redirect to login
+      if (res.status === 401) {
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("unipass_token");
+          localStorage.removeItem("unipass_user");
+          window.location.href = "/login";
+        }
+        throw new Error("Session expired. Please login again.");
+      }
+
       let errorMessage = "API error";
       
       try {
@@ -48,7 +60,7 @@ async function request(
     if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
       throw new Error(
         'Unable to connect to the server. Please ensure:\n' +
-        '1. The backend server is running on http://localhost:8000\n' +
+        '1. The backend server is running\n' +
         '2. You have a stable internet connection\n' +
         '3. No firewall is blocking the connection'
       );
@@ -87,7 +99,7 @@ export default api;
 ====================== */
 export async function checkBackendHealth(): Promise<boolean> {
   try {
-    const response = await fetch(`${API_BASE}/health`, {
+    const response = await fetch(`${API_BASE}/health/`, {
       method: 'GET',
       credentials: 'include',
     });
@@ -101,9 +113,9 @@ export async function checkBackendHealth(): Promise<boolean> {
    AUTH HELPERS
 ====================== */
 export async function login(email: string, password: string) {
-  return api.post("/auth/login", { email, password });
+  return api.post("/auth/login/", { email, password });
 }
 
 export async function signup(email: string, password: string) {
-  return api.post("/auth/signup", { email, password });
+  return api.post("/auth/signup/", { email, password });
 }

@@ -24,7 +24,7 @@ def verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
 
 
-@router.post("/signup", response_model=TokenResponse)
+@router.post("/signup/", response_model=TokenResponse)
 @limiter.limit("10/hour")  # Limit signup attempts
 def signup(request: Request, user: UserCreate, db: Session = Depends(get_db)):
     """
@@ -63,7 +63,7 @@ def signup(request: Request, user: UserCreate, db: Session = Depends(get_db)):
     )
 
 
-@router.post("/login", response_model=TokenResponse)
+@router.post("/login/", response_model=TokenResponse)
 @limiter.limit("20/hour")  # Limit login attempts to prevent brute force
 def login(request: Request, user: UserLogin, db: Session = Depends(get_db)):
     """

@@ -18,6 +18,7 @@ from app.schemas.feedback import (
 from app.core.permissions import require_organizer
 from app.services.email_service import send_feedback_request_email
 from app.services.audit_service import create_audit_log
+from app.services.sentiment_analysis_service import get_sentiment_service
 
 router = APIRouter(prefix="/feedback", tags=["Feedback"])
 
@@ -181,21 +182,29 @@ def submit_feedback(
         would_recommend=feedback.would_recommend
     )
     
-    # Basic sentiment analysis (simple rule-based for now)
-    # AI service can enhance this later
-    avg_rating = (
-        feedback.overall_rating + 
-        feedback.content_quality + 
-        feedback.organization_rating + 
-        feedback.venue_rating
-    ) / 4
-    
-    if avg_rating >= 4:
-        new_feedback.sentiment_score = 1  # Positive
-    elif avg_rating >= 3:
-        new_feedback.sentiment_score = 0  # Neutral
-    else:
-        new_feedback.sentiment_score = -1  # Negative
+    # Advanced sentiment analysis using NLP
+    try:
+        sentiment_service = get_sentiment_service()
+        analysis = sentiment_service.analyze_feedback(new_feedback)
+        new_feedback.sentiment_score = sentiment_service.get_sentiment_label(
+            analysis['sentiment_score']
+        )
+    except Exception as e:
+        # Fallback to basic rule-based sentiment if NLP fails
+        print(f"Sentiment analysis failed: {e}, using fallback")
+        avg_rating = (
+            feedback.overall_rating + 
+            feedback.content_quality + 
+            feedback.organization_rating + 
+            feedback.venue_rating
+        ) / 4
+        
+        if avg_rating >= 4:
+            new_feedback.sentiment_score = 1  # Positive
+        elif avg_rating >= 3:
+            new_feedback.sentiment_score = 0  # Neutral
+        else:
+            new_feedback.sentiment_score = -1  # Negative
     
     db.add(new_feedback)
     db.commit()
@@ -379,3 +388,120 @@ def check_feedback_eligibility(
         "attended": True,
         "already_submitted": False
     }
+
+
+# ============================================================
+# AI-POWERED SENTIMENT ANALYSIS ENDPOINTS
+# ============================================================
+
+@router.get("/event/{event_id}/sentiment-analysis")
+def get_event_sentiment_analysis(
+    event_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_organizer)
+):
+    """
+    Get comprehensive AI-powered sentiment analysis for an event.
+    Uses NLP (VADER) to analyze feedback text and ratings.
+    
+    Returns:
+    - Overall sentiment classification (positive/neutral/negative)
+    - Sentiment breakdown and distribution
+    - Average compound score and ratings
+    - Recommendation rate
+    - Top positive and negative themes extracted from text
+    - Actionable insights
+    """
+    # Verify event exists
+    event = db.query(Event).filter(Event.id == event_id).first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    
+    try:
+        sentiment_service = get_sentiment_service()
+        analysis = sentiment_service.analyze_event_feedback(db, event_id)
+        
+        return {
+            "event_id": event_id,
+            "event_name": event.name,
+            "analysis": analysis
+        }
+    except ImportError as e:
+        raise HTTPException(
+            status_code=503,
+            detail="Sentiment analysis service unavailable. Please install required packages: pip install nltk"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Sentiment analysis failed: {str(e)}"
+        )
+
+
+@router.get("/sentiment-trends")
+def get_sentiment_trends(
+    limit: int = 10,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_organizer)
+):
+    """
+    Get sentiment trends across recent events.
+    Useful for tracking feedback improvement over time.
+    
+    Query Parameters:
+    - limit: Number of recent events to analyze (default: 10, max: 50)
+    """
+    if limit > 50:
+        limit = 50
+    
+    try:
+        sentiment_service = get_sentiment_service()
+        trends = sentiment_service.get_sentiment_trends(db, limit)
+        
+        return trends
+    except ImportError as e:
+        raise HTTPException(
+            status_code=503,
+            detail="Sentiment analysis service unavailable. Please install required packages: pip install nltk"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch sentiment trends: {str(e)}"
+        )
+
+
+@router.post("/analyze-single")
+def analyze_single_feedback(
+    feedback_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_organizer)
+):
+    """
+    Get detailed sentiment analysis for a single feedback entry.
+    Returns detailed NLP breakdown including confidence scores and themes.
+    """
+    feedback = db.query(Feedback).filter(Feedback.id == feedback_id).first()
+    if not feedback:
+        raise HTTPException(status_code=404, detail="Feedback not found")
+    
+    try:
+        sentiment_service = get_sentiment_service()
+        analysis = sentiment_service.analyze_feedback(feedback)
+        
+        return {
+            "feedback_id": feedback_id,
+            "event_id": feedback.event_id,
+            "student_prn": feedback.student_prn,
+            "analysis": analysis
+        }
+    except ImportError as e:
+        raise HTTPException(
+            status_code=503,
+            detail="Sentiment analysis service unavailable. Please install required packages: pip install nltk"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Sentiment analysis failed: {str(e)}"
+        )

@@ -106,12 +106,13 @@ class FraudDetectionService:
         """Detect students with multiple certificates for same event"""
         alerts = []
         
-        # Group by student_prn and count
+        # Group by student_prn and count (exclude role-based certificates with NULL student_prn)
         duplicates = self.db.query(
             Certificate.student_prn,
             func.count(Certificate.id).label('cert_count')
-        ).filter_by(
-            event_id=event_id
+        ).filter(
+            Certificate.event_id == event_id,
+            Certificate.student_prn.isnot(None)  # Exclude organizer/scanner/volunteer certificates
         ).group_by(
             Certificate.student_prn
         ).having(
@@ -142,9 +143,11 @@ class FraudDetectionService:
         """Detect certificates issued without registration or attendance"""
         alerts = []
         
-        certificates = self.db.query(Certificate).filter_by(
-            event_id=event_id,
-            revoked=False
+        # Only check student certificates (exclude organizer/scanner/volunteer role-based certificates)
+        certificates = self.db.query(Certificate).filter(
+            Certificate.event_id == event_id,
+            Certificate.revoked == False,
+            Certificate.student_prn.isnot(None)  # Exclude role-based certificates
         ).all()
         
         for cert in certificates:

@@ -38,6 +38,7 @@ export default function DashboardPage() {
     todayEvents: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const role = getUserRole();
 
@@ -91,6 +92,7 @@ export default function DashboardPage() {
         });
       } catch (error) {
         console.error("Failed to load dashboard:", error);
+        setError(error instanceof Error ? error.message : "Failed to load dashboard");
       } finally {
         setLoading(false);
       }
@@ -105,6 +107,35 @@ export default function DashboardPage() {
         <div className="loading-state">
           <div className="spinner"></div>
           <p>Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="dashboard" style={{ padding: "2rem", textAlign: "center" }}>
+        <div className="error-state" style={{ 
+          background: "#fee", 
+          padding: "2rem", 
+          borderRadius: "8px",
+          color: "#c00" 
+        }}>
+          <h2>Error Loading Dashboard</h2>
+          <p>{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            style={{
+              padding: "0.5rem 1rem",
+              background: "#c00",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer"
+            }}
+          >
+            Retry
+          </button>
         </div>
       </div>
     );

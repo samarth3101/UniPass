@@ -211,7 +211,7 @@ export default function RegisterPage() {
                                     <div className="qr-section">
                                         <div className="qr-label">Entry Pass</div>
                                         <img 
-                                            src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/tickets/qr?token=${ticketData.token}`} 
+                                            src={`/api/tickets/qr?token=${ticketData.token}`} 
                                             alt="QR Code"
                                             className="qr-code"
                                         />

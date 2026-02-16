@@ -54,6 +54,22 @@ def scan_qr(
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
     
+    # Check if event has started
+    if event.start_time > datetime.utcnow():
+        print(f"❌ Scan rejected: Event {event_id} hasn't started. Starts at {event.start_time}")
+        raise HTTPException(
+            status_code=403,
+            detail=f"Event '{event.title}' has not started yet. It begins on {event.start_time.strftime('%d %b %Y, %I:%M %p')}."
+        )
+    
+    # Check if event has ended (primary validation via end_time)
+    if event.end_time and event.end_time < datetime.utcnow():
+        print(f"❌ Scan rejected: Event {event_id} ended at {event.end_time}")
+        raise HTTPException(
+            status_code=403, 
+            detail=f"Event '{event.title}' has already ended on {event.end_time.strftime('%d %b %Y, %I:%M %p')}. Attendance marking is closed. Contact admin for override."
+        )
+    
     # Calculate current event day (for multi-day events)
     # event.start_time is Day 1
     from datetime import date
@@ -64,24 +80,13 @@ def scan_qr(
     # Get total days for the event (default: 1)
     total_days = event.total_days or 1
     
-    # Validate current day
-    if current_day <= 0:
-        raise HTTPException(
-            status_code=403,
-            detail=f"Event '{event.title}' has not started yet. It begins on {event.start_time.strftime('%d %b %Y')}."
-        )
-    
-    if current_day > total_days:
+    # Day-based validation (secondary - only if no end_time or as a sanity check)
+    # Allow some flexibility: if current_day is slightly over but end_time hasn't passed, allow it
+    if not event.end_time and current_day > total_days:
+        print(f"❌ Scan rejected: Event {event_id} completed. Current day: {current_day}, Total days: {total_days}")
         raise HTTPException(
             status_code=403,
             detail=f"Event '{event.title}' has already completed all {total_days} day(s). Attendance marking is closed."
-        )
-    
-    # Check for event end_time (optional secondary validation)
-    if event.end_time and event.end_time < datetime.utcnow():
-        raise HTTPException(
-            status_code=403, 
-            detail=f"Event '{event.title}' has already ended on {event.end_time.strftime('%d %b %Y, %I:%M %p')}. Attendance marking is closed. Contact admin for override."
         )
     
     # Check if already attended TODAY (prevent duplicate same-day scans)

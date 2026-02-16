@@ -27,6 +27,7 @@ export default function ConflictDashboard() {
   const [filter, setFilter] = useState<string>('all');
   const [fraudData, setFraudData] = useState<any>(null);
   const [loadingFraud, setLoadingFraud] = useState(false);
+  const [resolvingConflict, setResolvingConflict] = useState<string | null>(null);
   
   // Fetch events on mount
   useEffect(() => {
@@ -46,7 +47,7 @@ export default function ConflictDashboard() {
         return;
       }
       
-      const response = await fetch('http://localhost:8000/events/', {
+      const response = await fetch('/api/events/', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -97,7 +98,7 @@ export default function ConflictDashboard() {
         return;
       }
       
-      const response = await fetch(`http://localhost:8000/ps1/participation/conflicts/${eventId}`, {
+      const response = await fetch(`/api/ps1/participation/conflicts/${eventId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -136,7 +137,7 @@ export default function ConflictDashboard() {
         return;
       }
       
-      const response = await fetch(`http://localhost:8000/ps1/fraud/detect/${selectedEvent}`, {
+      const response = await fetch(`/api/ps1/fraud/detect/${selectedEvent}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -177,6 +178,169 @@ export default function ConflictDashboard() {
     if (score >= 80) return 'trust-high';
     if (score >= 50) return 'trust-medium';
     return 'trust-low';
+  };
+  
+  // Conflict Resolution Actions
+  const handleRevokeCertificate = async (studentPrn: string) => {
+    if (!selectedEvent) return;
+    
+    const reason = prompt('Enter reason for revocation:');
+    if (!reason) return;
+    
+    setResolvingConflict(studentPrn);
+    
+    try {
+      const token = localStorage.getItem('unipass_token');
+      
+      // First, find the certificate ID for this student and event
+      const certResponse = await fetch(`/api/certificates/${selectedEvent}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!certResponse.ok) throw new Error('Failed to fetch certificate');
+      
+      const certs = await certResponse.json();
+      const studentCert = certs.find((c: any) => c.student_prn === studentPrn);
+      
+      if (!studentCert) {
+        alert('No certificate found for this student');
+        return;
+      }
+      
+      // Revoke the certificate
+      const response = await fetch(`/api/ps1/certificate/${studentCert.id}/revoke`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ reason })
+      });
+      
+      if (!response.ok) throw new Error('Failed to revoke certificate');
+      
+      alert('Certificate revoked successfully');
+      // Refresh conflicts
+      if (selectedEvent) fetchConflicts(selectedEvent);
+    } catch (error: any) {
+      console.error('Error revoking certificate:', error);
+      alert(`Failed to revoke certificate: ${error.message}`);
+    } finally {
+      setResolvingConflict(null);
+    }
+  };
+  
+  const handleFixAttendance = async (studentPrn: string) => {
+    if (!selectedEvent) return;
+    
+    const confirmed = confirm(`Add manual attendance for ${studentPrn}?`);
+    if (!confirmed) return;
+    
+    setResolvingConflict(studentPrn);
+    
+    try {
+      const token = localStorage.getItem('unipass_token');
+      
+      // Add manual attendance
+      const response = await fetch(`/api/attendance/manual/${selectedEvent}/${studentPrn}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) throw new Error('Failed to add attendance');
+      
+      alert('Attendance added successfully');
+      // Refresh conflicts
+      if (selectedEvent) fetchConflicts(selectedEvent);
+    } catch (error: any) {
+      console.error('Error fixing attendance:', error);
+      alert(`Failed to fix attendance: ${error.message}`);
+    } finally {
+      setResolvingConflict(null);
+    }
+  };
+  
+  const handleViewDetails = async (studentPrn: string) => {
+    if (!selectedEvent) return;
+    
+    try {
+      const token = localStorage.getItem('unipass_token');
+      
+      // Get participation status
+      const response = await fetch(`/api/ps1/participation/status/${selectedEvent}/${studentPrn}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) throw new Error('Failed to fetch details');
+      
+      const data = await response.json();
+      
+      // Show details in alert (could be improved with modal)
+      alert(`
+Participation Status for ${studentPrn}
+
+Status: ${data.canonical_status}
+Trust Score: ${data.trust_score}
+
+Registration: ${data.has_registration ? 'Yes' : 'No'}
+Attendance: ${data.has_attendance ? 'Yes' : 'No'} (${data.attendance_count} scans)
+Certificate: ${data.has_certificate ? 'Yes' : 'No'}
+Days Attended: ${data.days_attended}/${data.total_days_required}
+
+Conflicts: ${data.conflicts.length}
+${data.conflicts.map((c: any) => `- ${c.type}: ${c.message}`).join('\n')}
+      `);
+    } catch (error: any) {
+      console.error('Error fetching details:', error);
+      alert(`Failed to load details: ${error.message}`);
+    }
+  };
+  
+  const handleMarkResolved = async (studentPrn: string) => {
+    if (!selectedEvent) return;
+    
+    const notes = prompt('Enter resolution notes (optional):');
+    
+    setResolvingConflict(studentPrn);
+    
+    try {
+      const token = localStorage.getItem('unipass_token');
+      
+      // Log resolution as a correction
+      const response = await fetch(`/api/ps1/participation/${selectedEvent}/${studentPrn}/correct`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          correction_type: 'conflict_resolved',
+          old_value: 'conflicted',
+          new_value: 'resolved',
+          reason: notes || 'Conflict manually resolved by organizer'
+        })
+      });
+      
+      if (!response.ok) throw new Error('Failed to mark as resolved');
+      
+      alert('Conflict marked as resolved');
+      // Refresh conflicts
+      if (selectedEvent) fetchConflicts(selectedEvent);
+    } catch (error: any) {
+      console.error('Error marking resolved:', error);
+      alert(`Failed to mark as resolved: ${error.message}`);
+    } finally {
+      setResolvingConflict(null);
+    }
   };
   
   const filteredConflicts = conflicts.filter(item => {
@@ -384,10 +548,34 @@ export default function ConflictDashboard() {
                   </div>
                   
                   <div className="conflict-actions">
-                    <button className="btn btn-view">View Details</button>
-                    <button className="btn btn-fix">Fix Attendance</button>
-                    <button className="btn btn-revoke">Revoke Certificate</button>
-                    <button className="btn btn-resolve">Mark Resolved</button>
+                    <button 
+                      className="btn btn-view"
+                      onClick={() => handleViewDetails(item.student_prn)}
+                      disabled={resolvingConflict === item.student_prn}
+                    >
+                      View Details
+                    </button>
+                    <button 
+                      className="btn btn-fix"
+                      onClick={() => handleFixAttendance(item.student_prn)}
+                      disabled={resolvingConflict === item.student_prn}
+                    >
+                      {resolvingConflict === item.student_prn ? 'Processing...' : 'Fix Attendance'}
+                    </button>
+                    <button 
+                      className="btn btn-revoke"
+                      onClick={() => handleRevokeCertificate(item.student_prn)}
+                      disabled={resolvingConflict === item.student_prn}
+                    >
+                      {resolvingConflict === item.student_prn ? 'Processing...' : 'Revoke Certificate'}
+                    </button>
+                    <button 
+                      className="btn btn-resolve"
+                      onClick={() => handleMarkResolved(item.student_prn)}
+                      disabled={resolvingConflict === item.student_prn}
+                    >
+                      {resolvingConflict === item.student_prn ? 'Processing...' : 'Mark Resolved'}
+                    </button>
                   </div>
                 </div>
               ))}
