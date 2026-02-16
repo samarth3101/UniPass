@@ -86,27 +86,26 @@ export default function CortexCorePage() {
         }
       });
       
-      if (response.status === 401) {
-        alert('🔒 Authentication required. Please login to access this feature.');
+      if (!response.ok) {
+        if (response.status === 401) {
+          alert('🔒 Authentication required. Please login to access this feature.');
+        } else {
+          alert('Failed to download PDF');
+        }
         setLoading(false);
         return;
       }
       
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `transcript_${selectedStudent}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-        alert('✅ PDF downloaded successfully!');
-      } else {
-        const error = await response.json();
-        alert(`Failed to download PDF: ${error.detail || 'Unknown error'}`);
-      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `transcript_${selectedStudent}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      alert('✅ PDF downloaded successfully!');
     } catch (error) {
       console.error('Error:', error);
       alert('Error downloading PDF. Please check your connection.');
@@ -131,28 +130,15 @@ export default function CortexCorePage() {
         return;
       }
       
-      const response = await fetch(`http://localhost:8000/ps1/snapshots/student/${selectedStudent}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (response.status === 401) {
-        alert('🔒 Authentication required. Please login to access this feature.');
-        setLoading(false);
-        return;
-      }
-      
-      if (response.ok) {
-        const data = await response.json();
-        setSnapshotData(data);
-      } else {
-        const error = await response.json();
-        alert(`Failed to fetch snapshots: ${error.detail || 'Unknown error'}`);
-      }
-    } catch (error) {
+      const data = await api.get(`/ps1/snapshots/student/${selectedStudent}`);
+      setSnapshotData(data);
+    } catch (error: any) {
       console.error('Error:', error);
-      alert('Error fetching snapshots. Please check your connection.');
+      if (error.message.includes('401')) {
+        alert('🔒 Authentication required. Please login to access this feature.');
+      } else {
+        alert(`Failed to fetch snapshots: ${error.message || 'Unknown error'}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -174,28 +160,15 @@ export default function CortexCorePage() {
         return;
       }
       
-      const response = await fetch(`http://localhost:8000/ps1/audit/${selectedEvent}/${selectedStudent}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (response.status === 401) {
-        alert('🔒 Authentication required. Please login to access this feature.');
-        setLoading(false);
-        return;
-      }
-      
-      if (response.ok) {
-        const data = await response.json();
-        setAuditHistory(data);
-      } else {
-        const error = await response.json();
-        alert(`Failed to fetch audit history: ${error.detail || 'Unknown error'}`);
-      }
-    } catch (error) {
+      const data = await api.get(`/ps1/audit/${selectedEvent}/${selectedStudent}`);
+      setAuditHistory(data);
+    } catch (error: any) {
       console.error('Error:', error);
-      alert('Error fetching audit history. Please check your connection.');
+      if (error.message.includes('401')) {
+        alert('🔒 Authentication required. Please login to access this feature.');
+      } else {
+        alert(`Failed to fetch audit history: ${error.message || 'Unknown error'}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -217,28 +190,15 @@ export default function CortexCorePage() {
         return;
       }
       
-      const response = await fetch(`http://localhost:8000/ps1/fraud/detect/${selectedEvent}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (response.status === 401) {
-        alert('🔒 Authentication required. Please login to access this feature.');
-        setLoading(false);
-        return;
-      }
-      
-      if (response.ok) {
-        const data = await response.json();
-        setFraudReport(data);
-      } else {
-        const error = await response.json();
-        alert(`Failed to run fraud detection: ${error.detail || 'Unknown error'}`);
-      }
-    } catch (error) {
+      const data = await api.get(`/ps1/fraud/detect/${selectedEvent}`);
+      setFraudReport(data);
+    } catch (error: any) {
       console.error('Error:', error);
-      alert('Error running fraud detection. Please check your connection.');
+      if (error.message.includes('401')) {
+        alert('🔒 Authentication required. Please login to access this feature.');
+      } else {
+        alert(`Failed to run fraud detection: ${error.message || 'Unknown error'}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -260,33 +220,19 @@ export default function CortexCorePage() {
         return;
       }
       
-      const response = await fetch(`http://localhost:8000/ps1/attendance/${attendanceId}/invalidate`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ reason: invalidationReason })
+      const data = await api.post(`/ps1/attendance/${attendanceId}/invalidate`, {
+        reason: invalidationReason
       });
-      
-      if (response.status === 401) {
-        alert('🔒 Authentication required. Please login to access this feature.');
-        setLoading(false);
-        return;
-      }
-      
-      if (response.ok) {
-        const data = await response.json();
-        alert(`✅ ${data.message}`);
-        setAttendanceId('');
-        setInvalidationReason('');
-      } else {
-        const error = await response.json();
-        alert(`❌ ${error.detail}`);
-      }
-    } catch (error) {
+      alert(`✅ ${data.message}`);
+      setAttendanceId('');
+      setInvalidationReason('');
+    } catch (error: any) {
       console.error('Error:', error);
-      alert('Error invalidating attendance. Please check your connection.');
+      if (error.message.includes('401')) {
+        alert('🔒 Authentication required. Please login to access this feature.');
+      } else {
+        alert(`❌ ${error.message}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -308,37 +254,21 @@ export default function CortexCorePage() {
         return;
       }
       
-      const response = await fetch(`http://localhost:8000/ps1/participation/${selectedEvent}/${selectedStudent}/correct`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          correction_type: correctionData.type,
-          old_value: correctionData.oldValue,
-          new_value: correctionData.newValue,
-          reason: correctionData.reason
-        })
+      const data = await api.post(`/ps1/participation/${selectedEvent}/${selectedStudent}/correct`, {
+        correction_type: correctionData.type,
+        old_value: correctionData.oldValue,
+        new_value: correctionData.newValue,
+        reason: correctionData.reason
       });
-      
-      if (response.status === 401) {
-        alert('🔒 Authentication required. Please login to access this feature.');
-        setLoading(false);
-        return;
-      }
-      
-      if (response.ok) {
-        const data = await response.json();
-        alert(`✅ ${data.message}`);
-        setCorrectionData({ type: 'attendance', oldValue: '', newValue: '', reason: '' });
-      } else {
-        const error = await response.json();
-        alert(`❌ ${error.detail}`);
-      }
-    } catch (error) {
+      alert(`✅ ${data.message}`);
+      setCorrectionData({ type: 'attendance', oldValue: '', newValue: '', reason: '' });
+    } catch (error: any) {
       console.error('Error:', error);
-      alert('Error submitting correction. Please check your connection.');
+      if (error.message.includes('401')) {
+        alert('🔒 Authentication required. Please login to access this feature.');
+      } else {
+        alert(`❌ ${error.message}`);
+      }
     } finally {
       setLoading(false);
     }
