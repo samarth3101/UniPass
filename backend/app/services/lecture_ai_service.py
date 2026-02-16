@@ -1,6 +1,7 @@
 """
 Cortex Lecture Intelligence Engine - AI Service Layer
 Handles audio-to-text conversion, keyword extraction, and AI summarization
+Powered by Google Gemini AI
 """
 
 import os
@@ -13,6 +14,7 @@ from fastapi import UploadFile, HTTPException
 from app.models.lecture_report import LectureReport
 from app.models.event import Event
 from app.models.user import User
+from app.services.gemini_service import GeminiService
 
 
 # Configuration
@@ -23,11 +25,17 @@ MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
 
 
 class LectureAIService:
-    """Service for AI-powered lecture analysis"""
+    """Service for AI-powered lecture analysis using Google Gemini"""
     
     def __init__(self, db: Session):
         self.db = db
         self._ensure_storage_dir()
+        try:
+            self.gemini = GeminiService()
+        except Exception as e:
+            print(f"⚠️ Warning: Gemini AI not initialized: {e}")
+            print("   Make sure GEMINI_API_KEY is set in your .env file")
+            self.gemini = None
     
     def _ensure_storage_dir(self):
         """Create audio storage directory if it doesn't exist"""
@@ -72,68 +80,55 @@ class LectureAIService:
     
     async def transcribe_audio(self, audio_path: str) -> str:
         """
-        Convert audio to text using speech-to-text
+        Convert audio to text using Google Gemini AI
         
-        PRODUCTION NOTE:
-        - Option 1: Use OpenAI Whisper API (requires OPENAI_API_KEY)
-        - Option 2: Use local Whisper model (slower but free)
-        
-        For MVP, returns simulated transcript
+        Uses Gemini 1.5 Pro multimodal capabilities for high-quality transcription
         """
-        # TODO: Implement actual transcription
-        # Example with OpenAI Whisper API:
-        # import openai
-        # with open(audio_path, "rb") as audio_file:
-        #     transcript = openai.Audio.transcribe("whisper-1", audio_file)
-        #     return transcript["text"]
-        
-        # MVP Simulation
-        return """
-        [SIMULATED TRANSCRIPT]
-        Welcome everyone to today's workshop on Advanced Machine Learning techniques.
-        Today we'll be covering neural networks, deep learning architectures, and practical
-        applications in computer vision. Let's start with the fundamentals of backpropagation
-        and gradient descent. These concepts are crucial for understanding how neural networks
-        learn from data. We'll also discuss regularization techniques like dropout and batch
-        normalization that help prevent overfitting. Finally, we'll explore transfer learning
-        and how pre-trained models can accelerate your development process.
-        """
+        if self.gemini:
+            try:
+                return await self.gemini.transcribe_audio(audio_path)
+            except Exception as e:
+                print(f"⚠️ Gemini transcription failed: {e}")
+                raise HTTPException(
+                    status_code=500, 
+                    detail=f"Audio transcription failed: {str(e)}"
+                )
+        else:
+            raise HTTPException(
+                status_code=503,
+                detail="Gemini AI is not configured. Please set GEMINI_API_KEY in .env file"
+            )
     
     def extract_keywords(self, transcript: str, top_n: int = 15) -> List[str]:
         """
-        Extract keywords from transcript
+        Extract keywords from transcript using Google Gemini AI
         
-        PRODUCTION NOTE:
-        - Option 1: Use KeyBERT for context-aware extraction
-        - Option 2: Use TF-IDF for simple frequency-based extraction
-        
-        For MVP, returns simulated keywords
+        Uses context-aware AI analysis to identify the most important concepts
         """
-        # TODO: Implement actual keyword extraction
-        # Example with KeyBERT:
-        # from keybert import KeyBERT
-        # kw_model = KeyBERT()
-        # keywords = kw_model.extract_keywords(transcript, top_n=top_n)
-        # return [kw[0] for kw in keywords]
+        if self.gemini:
+            try:
+                return self.gemini.extract_keywords(transcript, top_n)
+            except Exception as e:
+                print(f"⚠️ Keyword extraction failed: {e}")
+                # Fallback to basic extraction
+                return self._fallback_keywords(transcript, top_n)
+        else:
+            return self._fallback_keywords(transcript, top_n)
+    
+    def _fallback_keywords(self, transcript: str, top_n: int) -> List[str]:
+        """Fallback keyword extraction using simple frequency analysis"""
+        from collections import Counter
+        import re
         
-        # MVP Simulation
-        return [
-            "machine learning",
-            "neural networks",
-            "deep learning",
-            "computer vision",
-            "backpropagation",
-            "gradient descent",
-            "dropout",
-            "batch normalization",
-            "overfitting",
-            "transfer learning",
-            "pre-trained models",
-            "regularization",
-            "optimization",
-            "architecture",
-            "algorithms"
-        ]
+        # Simple tokenization
+        words = re.findall(r'\b[a-zA-Z]{4,}\b', transcript.lower())
+        # Remove common stop words
+        stop_words = {'this', 'that', 'with', 'from', 'have', 'been', 'will', 'your', 'their', 'what', 'when', 'where', 'which', 'about', 'would', 'there', 'could', 'should'}
+        words = [w for w in words if w not in stop_words]
+        
+        # Count frequency
+        common = Counter(words).most_common(top_n)
+        return [word for word, _ in common]
     
     async def generate_structured_summary(
         self,
@@ -143,71 +138,46 @@ class LectureAIService:
         transcript: str
     ) -> Dict:
         """
-        Generate AI-powered structured summary using LLM
+        Generate AI-powered structured summary using Google Gemini
         
-        PRODUCTION NOTE:
-        - Use OpenAI GPT-4 or GPT-3.5-turbo
-        - Requires OPENAI_API_KEY in environment
-        
-        For MVP, returns structured template
+        Provides comprehensive analysis with insights and actionable recommendations
         """
-        # TODO: Implement actual LLM-based summarization
-        # Example prompt structure:
-        prompt = f"""
-        Analyze the following lecture transcript and generate a structured report.
-        
-        Event: {event_title}
-        Description: {event_description}
-        Key Topics: {', '.join(keywords)}
-        
-        Transcript:
-        {transcript[:2000]}  # Truncate if too long
-        
-        Generate a JSON response with:
-        - event_overview: Brief 2-3 sentence summary
-        - key_topics_discussed: Array of main topics
-        - important_quotes: Array of notable statements
-        - technical_highlights: Technical concepts covered
-        - audience_engagement_summary: Engagement indicators
-        - recommended_followup_actions: Suggested next steps
-        """
-        
-        # TODO: Call LLM API
-        # import openai
-        # response = openai.ChatCompletion.create(
-        #     model="gpt-4",
-        #     messages=[{"role": "user", "content": prompt}],
-        #     temperature=0.7
-        # )
-        # return json.loads(response.choices[0].message.content)
-        
-        # MVP Simulation
+        if self.gemini:
+            try:
+                return await self.gemini.generate_structured_summary(
+                    event_title=event_title,
+                    event_description=event_description,
+                    keywords=keywords,
+                    transcript=transcript
+                )
+            except Exception as e:
+                print(f"⚠️ Summary generation failed: {e}")
+                return self._fallback_summary(event_title, keywords)
+        else:
+            return self._fallback_summary(event_title, keywords)
+    
+    def _fallback_summary(self, event_title: str, keywords: List[str]) -> Dict:
+        """Fallback summary when Gemini is unavailable"""
         return {
-            "event_overview": f"{event_title} covered fundamental and advanced concepts in the field, with strong emphasis on practical applications and hands-on learning.",
+            "event_overview": f"{event_title} - Analysis pending. Please ensure Gemini AI is configured.",
             "key_topics_discussed": keywords[:8],
-            "important_quotes": [
-                "Understanding the fundamentals is crucial before diving into advanced topics",
-                "Transfer learning can significantly accelerate your development process",
-                "Always validate your models with proper test data"
-            ],
-            "technical_highlights": "Deep dive into neural network architectures, backpropagation algorithms, regularization techniques including dropout and batch normalization, and practical transfer learning applications.",
-            "audience_engagement_summary": "High engagement observed with multiple questions during Q&A session. Participants showed strong interest in practical implementation details.",
+            "important_quotes": ["AI analysis unavailable - configure GEMINI_API_KEY"],
+            "technical_highlights": "Detailed analysis requires Gemini AI configuration",
+            "audience_engagement_summary": "Analysis pending",
             "recommended_followup_actions": [
-                "Share code examples and notebooks used in the workshop",
-                "Schedule follow-up session on advanced topics",
-                "Create practice assignments for hands-on learning",
-                "Provide additional resources for self-study"
+                "Configure Gemini API key to enable full analysis",
+                "Review the transcript manually"
             ]
         }
     
     async def process_lecture_audio(
         self,
+        file: UploadFile,
         event_id: int,
-        user_id: int,
-        file: UploadFile
+        user_id: int
     ) -> LectureReport:
         """
-        Main pipeline: Process audio file and generate lecture report
+        Main processing pipeline for lecture audio analysis
         
         Steps:
         1. Validate and save audio file
