@@ -3,54 +3,42 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { getUser, logout } from "@/lib/auth";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./sidebar.scss";
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const user = getUser();
-  // Normalize role to lowercase for consistent comparison
   const role = user?.role?.toLowerCase() || "scanner";
-  const [expandedItems, setExpandedItems] = useState<string[]>(["/analytics"]);
+  const navRef = useRef<HTMLElement>(null);
+  const [indicatorStyle, setIndicatorStyle] = useState({ top: 0, height: 0, opacity: 0 });
+  const [isCortexActive, setIsCortexActive] = useState(false);
 
-  const toggleExpand = (href: string) => {
-    setExpandedItems((prev) =>
-      prev.includes(href) ? prev.filter((h) => h !== href) : [...prev, href]
-    );
-  };
-
-  const renderLabel = (label: string, isAI: boolean = false, isCORE: boolean = false) => {
-    if (isAI && label === "Cortex AI") {
-      return (
-        <>
-          Cortex <span style={{ color: '#6366f1', fontWeight: 600 }}>AI</span>
-        </>
-      );
+  useEffect(() => {
+    if (navRef.current) {
+      const activeLink = navRef.current.querySelector('.nav-item.active') as HTMLElement;
+      if (activeLink) {
+        const navTop = navRef.current.getBoundingClientRect().top;
+        const linkRect = activeLink.getBoundingClientRect();
+        const isCortex = activeLink.classList.contains('cortex-item');
+        setIsCortexActive(isCortex);
+        setIndicatorStyle({
+          top: linkRect.top - navTop,
+          height: linkRect.height,
+          opacity: 1
+        });
+      }
     }
-    if (isCORE && label === "Cortex CORE") {
-      return (
-        <>
-          Cortex <span style={{ 
-            background: 'linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899, #f59e0b)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            fontWeight: 700
-          }}>CORE</span>
-        </>
-      );
-    }
-    return label;
-  };
+  }, [pathname]);
 
   const handleLogout = () => {
     logout();
     router.push("/login");
   };
 
-  // Define menu items with role requirements
-  const menuItems = [
+  // Organized menu structure
+  const mainItems = [
     {
       label: "Dashboard",
       href: "/dashboard",
@@ -89,7 +77,21 @@ export default function Sidebar() {
       roles: ["admin", "organizer"],
     },
     {
-      label: "Cortex CORE",
+      label: "Scan",
+      href: "/scan",
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+          <circle cx="12" cy="13" r="4"/>
+        </svg>
+      ),
+      roles: ["admin", "organizer", "scanner"],
+    },
+  ];
+
+  const cortexItems = [
+    {
+      label: "CORE",
       href: "/ps1",
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -100,30 +102,48 @@ export default function Sidebar() {
         </svg>
       ),
       roles: ["admin", "organizer"],
-      isCORE: true,
     },
     {
-      label: "Cortex AI",
-      href: "/analytics",
+      label: "Lecture Intelligence",
+      href: "/cortex/lecture-ai",
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Z"/>
-          <path d="M12 6v12"/>
-          <path d="M6 12h12"/>
-          <circle cx="12" cy="12" r="2"/>
-          <path d="M8 8l-1.5-1.5"/>
-          <path d="M16 8l1.5-1.5"/>
-          <path d="M8 16l-1.5 1.5"/>
-          <path d="M16 16l1.5 1.5"/>
+          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="23"/>
+          <line x1="8" y1="23" x2="16" y2="23"/>
         </svg>
       ),
       roles: ["admin", "organizer"],
-      isAI: true,
-      subItems: [
-        { label: "Anomaly Detection", href: "/analytics/anomaly" },
-        { label: "Sentiment Analysis", href: "/analytics/sentiment" },
-      ],
     },
+    {
+      label: "Anomaly Detection",
+      href: "/analytics/anomaly",
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      ),
+      roles: ["admin", "organizer"],
+    },
+    {
+      label: "Sentiment Analysis",
+      href: "/analytics/sentiment",
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+          <line x1="9" y1="9" x2="9.01" y2="9"/>
+          <line x1="15" y1="9" x2="15.01" y2="9"/>
+        </svg>
+      ),
+      roles: ["admin", "organizer"],
+    },
+  ];
+
+  const managementItems = [
     {
       label: "Organizers",
       href: "/organizers",
@@ -171,23 +191,11 @@ export default function Sidebar() {
       ),
       roles: ["admin"],
     },
-    {
-      label: "Scan",
-      href: "/scan",
-      icon: (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-          <circle cx="12" cy="13" r="4"/>
-        </svg>
-      ),
-      roles: ["admin", "organizer", "scanner"],
-    },
   ];
 
-  // Filter menu items based on user role
-  const visibleItems = menuItems.filter((item) =>
-    item.roles.includes(role)
-  );
+  const visibleMainItems = mainItems.filter((item) => item.roles.includes(role));
+  const visibleCortexItems = cortexItems.filter((item) => item.roles.includes(role));
+  const visibleManagementItems = managementItems.filter((item) => item.roles.includes(role));
 
   return (
     <aside className="sidebar">
@@ -195,60 +203,65 @@ export default function Sidebar() {
         <h2 className="logo">UniPass</h2>
       </div>
 
-      <nav>
-        {visibleItems.map((item) => (
-          <div key={item.href}>
-            {item.subItems ? (
-              <>
-                <div
-                  className={`nav-item ${item.isAI ? "ai-glow" : ""} ${
-                    pathname.startsWith(item.href) ? "active" : ""
-                  }`}
-                  onClick={() => toggleExpand(item.href)}
-                >
-                  <span className="icon">{item.icon}</span>
-                  <span className="label">{renderLabel(item.label, item.isAI, item.isCORE)}</span>
-                  <svg
-                    className={`expand-arrow ${expandedItems.includes(item.href) ? "expanded" : ""}`}
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
-                </div>
-                <div className={`submenu ${expandedItems.includes(item.href) ? "expanded" : ""}`}>
-                  {item.subItems.map((subItem) => (
-                    <Link
-                      key={subItem.href}
-                      href={subItem.disabled ? "#" : subItem.href}
-                      className={`submenu-item ${
-                        pathname === subItem.href ? "active" : ""
-                      } ${subItem.disabled ? "disabled" : ""}`}
-                      onClick={(e) => subItem.disabled && e.preventDefault()}
-                    >
-                      {subItem.label}
-                      {subItem.disabled && (
-                        <span className="coming-soon">Soon</span>
-                      )}
-                    </Link>
-                  ))}
-                </div>
-              </>
-            ) : (
+      <nav ref={navRef}>
+        <div 
+          className={`sliding-indicator ${isCortexActive ? 'cortex-gradient' : ''}`}
+          style={{
+            top: `${indicatorStyle.top}px`,
+            height: `${indicatorStyle.height}px`,
+            opacity: indicatorStyle.opacity
+          }}
+        />
+        
+        {/* Main Section */}
+        {visibleMainItems.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={`nav-item ${pathname === item.href ? "active" : ""}`}
+          >
+            <span className="icon">{item.icon}</span>
+            <span className="label">{item.label}</span>
+          </Link>
+        ))}
+
+        {/* CORTEX Section */}
+        {visibleCortexItems.length > 0 && (
+          <>
+            <div className="section-divider">
+              <span className="section-label cortex-label">CORTEX</span>
+            </div>
+            {visibleCortexItems.map((item) => (
               <Link
+                key={item.href}
                 href={item.href}
-                className={pathname === item.href ? "active" : ""}
+                className={`nav-item cortex-item ${pathname === item.href ? "active" : ""}`}
               >
                 <span className="icon">{item.icon}</span>
                 <span className="label">{item.label}</span>
               </Link>
-            )}
-          </div>
-        ))}
+            ))}
+          </>
+        )}
+
+        {/* Management Section */}
+        {visibleManagementItems.length > 0 && (
+          <>
+            <div className="section-divider">
+              <span className="section-label">Management</span>
+            </div>
+            {visibleManagementItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`nav-item ${pathname === item.href ? "active" : ""}`}
+              >
+                <span className="icon">{item.icon}</span>
+                <span className="label">{item.label}</span>
+              </Link>
+            ))}
+          </>
+        )}
       </nav>
 
       <div className="sidebar-footer">

@@ -33,6 +33,7 @@ from app.routes.feedback import router as feedback_router
 from app.routes.analytics import router as analytics_router
 from app.routes.anomaly import router as anomaly_router
 from app.routes.ps1 import router as ps1_router
+from app.routes.lecture_ai import router as lecture_ai_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -73,6 +74,7 @@ app.include_router(volunteers_router)
 app.include_router(feedback_router)
 app.include_router(analytics_router)
 app.include_router(anomaly_router)
+app.include_router(lecture_ai_router)
 app.include_router(ps1_router)
 
 @app.get("/")

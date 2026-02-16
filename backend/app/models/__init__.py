@@ -9,3 +9,4 @@ from app.models.user import User, UserRole
 from app.models.participation_role import ParticipationRole, RoleType
 from app.models.student_snapshot import StudentSnapshot
 from app.models.volunteer import Volunteer
+from app.models.lecture_report import LectureReport

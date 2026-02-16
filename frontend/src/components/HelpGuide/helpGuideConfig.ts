@@ -301,6 +301,202 @@ export const helpGuideConfig: Record<string, HelpGuideContent> = {
         type: 'paragraph'
       }
     ]
+  },
+
+  'lecture-intelligence': {
+    moduleId: 'lecture-intelligence',
+    moduleName: 'Lecture Intelligence',
+    displayName: 'Cortex LIE - Lecture Intelligence Engine',
+    sections: [
+      {
+        title: 'What is Cortex LIE?',
+        content: 'Cortex LIE (Lecture Intelligence Engine) automatically transcribes lecture audio recordings, extracts key insights, generates summaries, identifies important topics, and provides actionable recommendations using advanced AI.',
+        type: 'paragraph'
+      },
+      {
+        title: 'How It Works',
+        content: [
+          'Upload audio recordings from lectures or guest speaker sessions',
+          'AI transcribes the complete audio to text with high accuracy',
+          'Natural Language Processing identifies keywords and important topics',
+          'Generates comprehensive summaries with key discussion points',
+          'Extracts memorable quotes and technical highlights',
+          'Provides follow-up action recommendations based on content'
+        ],
+        type: 'list'
+      },
+      {
+        title: 'Getting Started',
+        content: [
+          'Enter Event ID: Specify which event the lecture recording belongs to',
+          'Upload Audio: Select MP3, WAV, or M4A file (max 100MB)',
+          'Wait for Processing: AI analyzes and transcribes the audio',
+          'Review Report: Check transcript, keywords, summary, and insights',
+          'Export or Share: Download reports for documentation or sharing'
+        ],
+        type: 'ordered-list'
+      },
+      {
+        title: 'Supported Audio Formats',
+        content: [
+          'MP3: Standard compressed audio format',
+          'WAV: Uncompressed high-quality audio',
+          'M4A: Apple audio format (AAC codec)',
+          'Maximum file size: 100MB per upload',
+          'Recommended: Clear audio with minimal background noise'
+        ],
+        type: 'list'
+      },
+      {
+        title: 'What You Get',
+        content: [
+          'Complete Transcript: Full text version of the lecture',
+          'Keywords: Most important terms and concepts discussed',
+          'Event Overview: High-level summary of the lecture content',
+          'Key Topics: Main discussion points and subjects covered',
+          'Important Quotes: Memorable statements from speakers',
+          'Technical Highlights: Key technical or academic insights',
+          'Engagement Summary: Analysis of audience interaction patterns',
+          'Follow-up Actions: Recommended next steps based on content'
+        ],
+        type: 'list'
+      },
+      {
+        title: 'Best Practices',
+        content: [
+          'Use quality recording equipment for better transcription accuracy',
+          'Minimize background noise during recording',
+          'Record closer to the speaker for clearer audio',
+          'Upload within 24 hours for timely insights',
+          'Review transcripts to catch any AI misinterpretations',
+          'Share summaries with students who missed the lecture',
+          'Archive reports for future reference and accreditation'
+        ],
+        type: 'list'
+      },
+      {
+        title: 'Tips for Better Results',
+        content: [
+          'Single speaker recordings work better than multi-person discussions',
+          'Clear enunciation improves transcription accuracy',
+          'Technical jargon may require manual review',
+          'Longer recordings (30+ minutes) provide richer insights',
+          'Include Q&A sessions for engagement analysis'
+        ],
+        type: 'list'
+      },
+      {
+        title: 'Processing Time',
+        content: 'Processing time depends on audio length and server load. Typically, a 1-hour lecture takes 5-10 minutes to process. You\'ll see real-time status updates (processing, completed, or failed).',
+        type: 'paragraph'
+      }
+    ]
+  },
+
+  'sentiment-analysis': {
+    moduleId: 'sentiment-analysis',
+    moduleName: 'Sentiment Analysis',
+    displayName: 'Cortex Sentiment Analysis Dashboard',
+    sections: [
+      {
+        title: 'What is This?',
+        content: 'AI-powered sentiment analysis system that processes student feedback to understand emotional tone, identify trends, extract themes, and provide actionable insights for improving events and student satisfaction.',
+        type: 'paragraph'
+      },
+      {
+        title: 'How It Works',
+        content: [
+          'Collects feedback from students after events',
+          'Uses Natural Language Processing to analyze text sentiment',
+          'Classifies feedback as Positive, Neutral, or Negative',
+          'Calculates compound sentiment scores (-1 to +1)',
+          'Extracts common themes and keywords from feedback',
+          'Generates trend analysis across multiple events'
+        ],
+        type: 'list'
+      },
+      {
+        title: 'Getting Started',
+        content: [
+          'Select an Event: Choose from the dropdown to analyze specific event feedback',
+          'Review Overall Sentiment: Check the summary metrics and ratings',
+          'Examine Breakdown: See distribution of positive, neutral, and negative feedback',
+          'Explore Themes: Identify common positive and negative topics',
+          'Study Trends: Compare sentiment across recent events',
+          'Take Action: Use insights to improve future events'
+        ],
+        type: 'ordered-list'
+      },
+      {
+        title: 'Key Metrics Explained',
+        content: [
+          'Overall Sentiment: General emotional tone (Positive/Neutral/Negative)',
+          'Compound Score: Numerical sentiment (-1 to +1, higher is better)',
+          'Average Rating: Mean star rating from student feedback',
+          'Recommendation Rate: Percentage of students who would recommend',
+          'Sentiment Breakdown: Distribution across positive, neutral, negative',
+          'Theme Analysis: Most frequently mentioned topics'
+        ],
+        type: 'list'
+      },
+      {
+        title: 'Understanding Sentiment Scores',
+        content: [
+          'Positive (+0.05 to +1.0): Students enjoyed the event',
+          'Neutral (-0.05 to +0.05): Mixed or balanced feedback',
+          'Negative (-1.0 to -0.05): Areas needing improvement',
+          'Compound Score > +0.5: Excellent reception',
+          'Compound Score 0 to +0.5: Good with room for improvement',
+          'Compound Score < 0: Significant concerns to address'
+        ],
+        type: 'list'
+      },
+      {
+        title: 'Positive Themes',
+        content: 'Highlight what students loved about the event. Use these themes to replicate success in future events, recognize what works well, and promote strengths in event planning.',
+        type: 'paragraph'
+      },
+      {
+        title: 'Negative Themes',
+        content: 'Identify areas for improvement. Common issues might include timing, content delivery, venue problems, or organizational challenges. Address these systematically to enhance student satisfaction.',
+        type: 'paragraph'
+      },
+      {
+        title: 'Trend Analysis',
+        content: [
+          'Track sentiment evolution: See how feedback changes over time',
+          'Compare events: Identify which events perform better',
+          'Seasonal patterns: Understand timing impact on satisfaction',
+          'Long-term improvement: Monitor whether changes are working',
+          'Benchmark performance: Set standards based on historical data'
+        ],
+        type: 'list'
+      },
+      {
+        title: 'Best Practices',
+        content: [
+          'Encourage students to provide detailed feedback',
+          'Review sentiment within 48 hours of event completion',
+          'Address negative themes promptly and visibly',
+          'Share positive feedback with organizers and speakers',
+          'Use trends to inform future event planning decisions',
+          'Respond to student concerns to show you\'re listening',
+          'Compare similar events to identify best practices'
+        ],
+        type: 'list'
+      },
+      {
+        title: 'Taking Action',
+        content: [
+          'High Negative Sentiment: Conduct follow-up surveys, address specific concerns',
+          'Mixed Feedback: Identify divisive aspects and gather more context',
+          'Consistently Low Ratings: Consider major format or content changes',
+          'Positive Trends: Document and replicate successful strategies',
+          'Emerging Themes: Watch for new patterns requiring attention'
+        ],
+        type: 'list'
+      }
+    ]
   }
 };
 

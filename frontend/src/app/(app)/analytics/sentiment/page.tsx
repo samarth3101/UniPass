@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import api from "@/services/api";
 import { toast } from "@/components/Toast";
+import HelpGuide from "@/components/HelpGuide/HelpGuide";
+import { getHelpContent } from "@/components/HelpGuide/helpGuideConfig";
 import "./sentiment.scss";
 
 interface SentimentBreakdown {
@@ -51,6 +53,7 @@ export default function SentimentAnalysisPage() {
   const [avgSentiment, setAvgSentiment] = useState<number>(0);
   const [loading, setLoading] = useState(false);
   const [loadingTrends, setLoadingTrends] = useState(false);
+  const helpContent = getHelpContent('sentiment-analysis');
 
   useEffect(() => {
     loadEvents();
@@ -379,6 +382,8 @@ export default function SentimentAnalysisPage() {
           </table>
         </div>
       </div>
+      
+      {helpContent && <HelpGuide content={helpContent} />}
     </div>
   );
 }
