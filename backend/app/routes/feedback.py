@@ -423,7 +423,7 @@ def get_event_sentiment_analysis(
         
         return {
             "event_id": event_id,
-            "event_name": event.name,
+            "event_name": event.title,  # Event model uses 'title' not 'name'
             "analysis": analysis
         }
     except ImportError as e:

@@ -27,6 +27,7 @@ print("\n📦 Downloading NLTK data packages...")
 packages = [
     ('vader_lexicon', 'Sentiment analyzer'),
     ('punkt', 'Tokenizer'),
+    ('punkt_tab', 'Tokenizer tables (NLTK 3.9+)'),
     ('stopwords', 'Stopword filter'),
     ('wordnet', 'Lemmatizer'),
 ]

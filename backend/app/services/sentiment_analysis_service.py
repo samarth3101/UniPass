@@ -36,6 +36,7 @@ try:
     
     nltk.download('vader_lexicon', quiet=True)
     nltk.download('punkt', quiet=True)
+    nltk.download('punkt_tab', quiet=True)  # Required for NLTK 3.9+
     nltk.download('stopwords', quiet=True)
     nltk.download('wordnet', quiet=True)
     
@@ -326,7 +327,7 @@ class SentimentAnalysisService:
             event_sentiment = self.analyze_event_feedback(db, event.id)
             trends.append({
                 'event_id': event.id,
-                'event_name': event.name,
+                'event_name': event.title,  # Event model uses 'title' not 'name'
                 'event_date': event.start_time.strftime('%Y-%m-%d') if event.start_time else None,
                 'sentiment_score': event_sentiment['avg_compound_score'],
                 'avg_rating': event_sentiment['avg_rating'],

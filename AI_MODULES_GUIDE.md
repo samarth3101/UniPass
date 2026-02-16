@@ -349,12 +349,15 @@ python3 setup_nltk.py
 import nltk
 nltk.download('vader_lexicon')
 nltk.download('punkt')
+nltk.download('punkt_tab')  # Required for NLTK 3.9+
 nltk.download('stopwords')
 nltk.download('wordnet')
 ```
 
 **If you encounter SSL certificate errors on macOS:**
 The service automatically handles SSL certificate verification issues. The `setup_nltk.py` script disables SSL verification temporarily to download required data.
+
+**Note:** NLTK 3.9+ requires the `punkt_tab` package in addition to `punkt` for tokenization.
 
 ### 3. Train Anomaly Detector
 

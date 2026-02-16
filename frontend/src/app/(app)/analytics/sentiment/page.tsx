@@ -59,8 +59,8 @@ export default function SentimentAnalysisPage() {
 
   const loadEvents = async () => {
     try {
-      const data = await api.get("/events");
-      setEvents(data);
+      const data = await api.get("/events/");
+      setEvents(data.events || []);
     } catch (err) {
       console.error("Failed to load events:", err);
     }
@@ -106,14 +106,38 @@ export default function SentimentAnalysisPage() {
     }
   };
 
-  const getSentimentIcon = (sentiment: string) => {
+  const getSentimentIcon = (sentiment: string, useWhite: boolean = false) => {
+    const iconSize = 24;
+    const color = useWhite ? "#ffffff" : getSentimentColor(sentiment);
+    
     switch (sentiment) {
       case "positive":
-        return "😊";
+        return (
+          <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+            <line x1="9" y1="9" x2="9.01" y2="9"/>
+            <line x1="15" y1="9" x2="15.01" y2="9"/>
+          </svg>
+        );
       case "negative":
-        return "😞";
+        return (
+          <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M16 16s-1.5-2-4-2-4 2-4 2"/>
+            <line x1="9" y1="9" x2="9.01" y2="9"/>
+            <line x1="15" y1="9" x2="15.01" y2="9"/>
+          </svg>
+        );
       default:
-        return "😐";
+        return (
+          <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="8" y1="15" x2="16" y2="15"/>
+            <line x1="9" y1="9" x2="9.01" y2="9"/>
+            <line x1="15" y1="9" x2="15.01" y2="9"/>
+          </svg>
+        );
     }
   };
 
@@ -147,7 +171,7 @@ export default function SentimentAnalysisPage() {
             <option value="">-- Select an event --</option>
             {events.map((event) => (
               <option key={event.id} value={event.id}>
-                {event.name} ({new Date(event.start_time).toLocaleDateString()})
+                {event.title} ({new Date(event.start_time).toLocaleDateString()})
               </option>
             ))}
           </select>
@@ -171,12 +195,12 @@ export default function SentimentAnalysisPage() {
             <div className="overview-stats">
               <div className="stat-card">
                 <div className="stat-icon" style={{ background: getSentimentColor(eventAnalysis.analysis.overall_sentiment) }}>
-                  <span className="emoji">{getSentimentIcon(eventAnalysis.analysis.overall_sentiment)}</span>
+                  {getSentimentIcon(eventAnalysis.analysis.overall_sentiment, true)}
                 </div>
                 <div className="stat-info">
                   <div className="stat-label">Overall Sentiment</div>
                   <div className="stat-value" style={{ color: getSentimentColor(eventAnalysis.analysis.overall_sentiment) }}>
-                    {eventAnalysis.analysis.overall_sentiment.toUpperCase()}
+                    {getSentimentIcon(eventAnalysis.analysis.overall_sentiment)} {eventAnalysis.analysis.overall_sentiment.toUpperCase()}
                   </div>
                 </div>
               </div>

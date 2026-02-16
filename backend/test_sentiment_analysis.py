@@ -109,7 +109,7 @@ try:
     if not event_with_feedback:
         print("   ⚠️  No events with feedback found")
     else:
-        print(f"   Analyzing event: {event_with_feedback.name}")
+        print(f"   Analyzing event: {event_with_feedback.title}")  # Event model uses 'title'
         
         event_analysis = service.analyze_event_feedback(db, event_with_feedback.id)
         
