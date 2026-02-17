@@ -329,11 +329,18 @@ def send_ticket_email(
         qr_image.add_header('Content-Disposition', 'inline', filename='qr_code.png')
         msg.attach(qr_image)
         
-        # Send email with timeout (increased to 10 seconds for reliability)
-        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
-            server.starttls()
-            server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-            server.send_message(msg)
+        # Send email with timeout - support both SSL (port 465) and TLS (port 587)
+        if settings.SMTP_PORT == 465:
+            # Use SSL for port 465
+            with smtplib.SMTP_SSL(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
+                server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                server.send_message(msg)
+        else:
+            # Use STARTTLS for port 587
+            with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
+                server.starttls()
+                server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                server.send_message(msg)
         
         print(f"✅ Ticket email sent successfully to {to_email}")
         return True
@@ -515,11 +522,18 @@ def send_teacher_email(
         html_part = MIMEText(html_body, 'html')
         msg.attach(html_part)
         
-        # Send email with timeout (increased to 10 seconds for reliability)
-        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
-            server.starttls()
-            server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-            server.send_message(msg)
+        # Send email with timeout - support both SSL (port 465) and TLS (port 587)
+        if settings.SMTP_PORT == 465:
+            # Use SSL for port 465
+            with smtplib.SMTP_SSL(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
+                server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                server.send_message(msg)
+        else:
+            # Use STARTTLS for port 587
+            with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
+                server.starttls()
+                server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                server.send_message(msg)
         
         print(f"✅ Teacher attendance report sent successfully to {to_email}")
         return True
@@ -712,11 +726,18 @@ def send_certificate_email(
         html_part = MIMEText(html_body, 'html')
         msg.attach(html_part)
         
-        # Send email with timeout (increased to 10 seconds for reliability)
-        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
-            server.starttls()
-            server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-            server.send_message(msg)
+        # Send email with timeout - support both SSL (port 465) and TLS (port 587)
+        if settings.SMTP_PORT == 465:
+            # Use SSL for port 465
+            with smtplib.SMTP_SSL(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
+                server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                server.send_message(msg)
+        else:
+            # Use STARTTLS for port 587
+            with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
+                server.starttls()
+                server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                server.send_message(msg)
         
         print(f"✅ Certificate email sent successfully to {to_email}")
         return True
@@ -1002,11 +1023,18 @@ def send_feedback_request_email(
         html_part = MIMEText(html_body, 'html')
         msg.attach(html_part)
         
-        # Send email with timeout (increased to 10 seconds for reliability)
-        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
-            server.starttls()
-            server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-            server.send_message(msg)
+        # Send email with timeout - support both SSL (port 465) and TLS (port 587)
+        if settings.SMTP_PORT == 465:
+            # Use SSL for port 465
+            with smtplib.SMTP_SSL(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
+                server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                server.send_message(msg)
+        else:
+            # Use STARTTLS for port 587
+            with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
+                server.starttls()
+                server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                server.send_message(msg)
         
         print(f"✅ Feedback request email sent successfully to {to_email}")
         return True
