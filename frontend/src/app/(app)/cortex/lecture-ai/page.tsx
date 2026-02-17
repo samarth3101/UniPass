@@ -7,6 +7,86 @@ import HelpGuide from '@/components/HelpGuide/HelpGuide';
 import { getHelpContent } from '@/components/HelpGuide/helpGuideConfig';
 import './lecture-ai.scss';
 
+// Icon components
+const UploadIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }}>
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+    <polyline points="17 8 12 3 7 8"></polyline>
+    <line x1="12" y1="3" x2="12" y2="15"></line>
+  </svg>
+);
+
+const RocketIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }}>
+    <path d="M4.5 16.5c-1.5 1.25-2 5-2 5s3.75-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path>
+    <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path>
+    <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path>
+    <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path>
+  </svg>
+);
+
+const ChartIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }}>
+    <line x1="12" y1="20" x2="12" y2="10"></line>
+    <line x1="18" y1="20" x2="18" y2="4"></line>
+    <line x1="6" y1="20" x2="6" y2="16"></line>
+  </svg>
+);
+
+const ClipboardIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }}>
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+  </svg>
+);
+
+const CheckIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }}>
+    <polyline points="20 6 9 17 4 12"></polyline>
+  </svg>
+);
+
+const ClockIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }}>
+    <circle cx="12" cy="12" r="10"></circle>
+    <polyline points="12 6 12 12 16 14"></polyline>
+  </svg>
+);
+
+const XIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }}>
+    <line x1="18" y1="6" x2="6" y2="18"></line>
+    <line x1="6" y1="6" x2="18" y2="18"></line>
+  </svg>
+);
+
+const TagIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }}>
+    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+    <line x1="7" y1="7" x2="7.01" y2="7"></line>
+  </svg>
+);
+
+const BotIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }}>
+    <rect x="3" y="11" width="18" height="10" rx="2"></rect>
+    <circle cx="12" cy="5" r="2"></circle>
+    <path d="M12 7v4"></path>
+    <line x1="8" y1="16" x2="8" y2="16"></line>
+    <line x1="16" y1="16" x2="16" y2="16"></line>
+  </svg>
+);
+
+const FileTextIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }}>
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+    <polyline points="14 2 14 8 20 8"></polyline>
+    <line x1="16" y1="13" x2="8" y2="13"></line>
+    <line x1="16" y1="17" x2="8" y2="17"></line>
+    <polyline points="10 9 9 9 8 9"></polyline>
+  </svg>
+);
+
 interface LectureReport {
   report_id: number;
   event: {
@@ -111,8 +191,22 @@ export default function LectureAIPage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Upload failed');
+        let errorMessage = 'Upload failed';
+        const contentType = response.headers.get('content-type');
+        
+        if (contentType && contentType.includes('application/json')) {
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.detail || errorMessage;
+          } catch (e) {
+            errorMessage = `Server error: ${response.status} ${response.statusText}`;
+          }
+        } else {
+          const textError = await response.text();
+          errorMessage = textError || `Server error: ${response.status} ${response.statusText}`;
+        }
+        
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -188,7 +282,7 @@ export default function LectureAIPage() {
 
       {/* Upload Section */}
       <div className="upload-section">
-        <h2>📤 Upload Lecture Audio</h2>
+        <h2><UploadIcon /> Upload Lecture Audio</h2>
         <div className="upload-form">
           <div className="form-group">
             <label htmlFor="event-id">Event ID</label>
@@ -226,7 +320,7 @@ export default function LectureAIPage() {
               borderRadius: '8px',
               color: '#065f46'
             }}>
-              ✅ Audio uploaded and processing initiated successfully!
+              <CheckIcon /> Audio uploaded and processing initiated successfully!
             </div>
           )}
 
@@ -235,7 +329,7 @@ export default function LectureAIPage() {
             onClick={handleUpload}
             disabled={loading || !selectedEventId || !selectedFile}
           >
-            {loading ? '⏳ Processing...' : '🚀 Upload & Process'}
+            {loading ? <><ClockIcon /> Processing...</> : <><RocketIcon /> Upload & Process</>}
           </button>
 
           <button 
@@ -244,18 +338,18 @@ export default function LectureAIPage() {
             disabled={loading || !selectedEventId}
             style={{ background: 'linear-gradient(135deg, #10b981, #3b82f6)' }}
           >
-            📊 View Existing Report
+            <ChartIcon /> View Existing Report
           </button>
         </div>
       </div>
 
       {/* Report Section */}
       <div className="report-section">
-        <h2>📋 Lecture Intelligence Report</h2>
+        <h2><ClipboardIcon /> Lecture Intelligence Report</h2>
 
         {loading && (
           <div className="loading">
-            <p>⏳ Loading report...</p>
+            <p><ClockIcon /> Loading report...</p>
           </div>
         )}
 
@@ -280,9 +374,9 @@ export default function LectureAIPage() {
               <div className="meta-item">
                 <span className="label">Status</span>
                 <span className={`status-badge ${report.status}`}>
-                  {report.status === 'completed' && '✅ Completed'}
-                  {report.status === 'processing' && '⏳ Processing'}
-                  {report.status === 'failed' && '❌ Failed'}
+                  {report.status === 'completed' && <><CheckIcon /> Completed</>}
+                  {report.status === 'processing' && <><ClockIcon /> Processing</>}
+                  {report.status === 'failed' && <><XIcon /> Failed</>}
                 </span>
               </div>
               <div className="meta-item">
@@ -306,7 +400,7 @@ export default function LectureAIPage() {
                 {/* Keywords */}
                 {report.keywords && report.keywords.length > 0 && (
                   <div className="keywords-section">
-                    <h3>🏷️ Extracted Keywords</h3>
+                    <h3><TagIcon /> Extracted Keywords</h3>
                     <div className="keywords-grid">
                       {report.keywords.map((keyword, idx) => (
                         <span key={idx} className="keyword-badge">
@@ -320,7 +414,7 @@ export default function LectureAIPage() {
                 {/* AI Summary */}
                 {report.summary && (
                   <div className="summary-section">
-                    <h3>🤖 AI-Generated Summary</h3>
+                    <h3><BotIcon /> AI-Generated Summary</h3>
                     <div className="summary-cards">
                       {Object.entries(report.summary).map(([key, value]) => (
                         <div key={key} className="summary-card">
@@ -339,7 +433,7 @@ export default function LectureAIPage() {
                 {/* Transcript */}
                 {report.transcript && (
                   <div className="transcript-section">
-                    <h3>📝 Full Transcript</h3>
+                    <h3><FileTextIcon /> Full Transcript</h3>
                     <div className="transcript-box">
                       {report.transcript}
                     </div>
