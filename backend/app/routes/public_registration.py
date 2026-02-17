@@ -11,6 +11,71 @@ from app.services.email_service import send_ticket_email
 router = APIRouter(prefix="/register/slug", tags=["Public Registration"])
 
 
+@router.get("/retrieve-ticket")
+def retrieve_ticket(
+    prn: str,
+    email: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Retrieve ticket for a student by PRN and email.
+    Returns the most recent ticket if multiple events registered.
+    """
+    # Verify student exists with matching email
+    student = db.query(Student).filter(
+        Student.prn == prn,
+        Student.email == email
+    ).first()
+    
+    if not student:
+        raise HTTPException(
+            status_code=404,
+            detail="No registration found with this PRN and email combination"
+        )
+    
+    # Get all tickets for this student (ordered by most recent)
+    tickets = db.query(Ticket).filter(
+        Ticket.student_prn == prn
+    ).order_by(Ticket.issued_at.desc()).all()
+    
+    if not tickets:
+        raise HTTPException(
+            status_code=404,
+            detail="No tickets found for this student"
+        )
+    
+    # Return all tickets with event details
+    ticket_list = []
+    for ticket in tickets:
+        event = db.query(Event).filter(Event.id == ticket.event_id).first()
+        if event:
+            ticket_list.append({
+                "ticket_id": ticket.id,
+                "token": ticket.token,
+                "student": {
+                    "prn": student.prn,
+                    "name": student.name,
+                    "email": student.email,
+                    "branch": student.branch,
+                    "year": student.year,
+                    "division": student.division,
+                },
+                "event": {
+                    "id": event.id,
+                    "title": event.title,
+                    "description": event.description,
+                    "location": event.location,
+                    "start_time": event.start_time.isoformat() if event.start_time else None,
+                    "end_time": event.end_time.isoformat() if event.end_time else None,
+                }
+            })
+    
+    return {
+        "message": "Tickets retrieved successfully",
+        "tickets": ticket_list
+    }
+
+
 @router.post("/{share_slug}")
 def register_student(
     share_slug: str,

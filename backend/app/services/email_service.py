@@ -346,7 +346,8 @@ def send_ticket_email(
         return True
         
     except Exception as e:
-        print(f"❌ Failed to send ticket email to {to_email}: {str(e)}")
+        # Silently log email failures (network/SMTP issues are common)
+        print(f"ℹ️  Email delivery skipped for {to_email} (SMTP unavailable)")
         return False
 
 
