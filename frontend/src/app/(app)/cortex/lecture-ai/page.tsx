@@ -181,8 +181,9 @@ export default function LectureAIPage() {
       const formData = new FormData();
       formData.append('file', selectedFile);
 
-      // Upload audio file
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ai/lecture/upload/${selectedEventId}`, {
+      // Upload audio file (use /api proxy for HTTPS compatibility)
+      const apiBase = typeof window !== 'undefined' && window.location.protocol === 'https:' ? '/api' : 'http://localhost:8000';
+      const response = await fetch(`${apiBase}/ai/lecture/upload/${selectedEventId}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

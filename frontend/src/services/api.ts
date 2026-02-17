@@ -9,6 +9,11 @@ async function request(
   path: string,
   options: RequestInit = {}
 ) {
+  // Always use /api proxy in browser for HTTPS
+  const apiBase = typeof window !== 'undefined' && window.location.protocol === 'https:' 
+    ? '/api' 
+    : getApiUrl();
+    
   // Get token from localStorage
   const token = typeof window !== "undefined" 
     ? localStorage.getItem("unipass_token") 
@@ -25,7 +30,7 @@ async function request(
   }
 
   try {
-    const res = await fetch(`${API_BASE}${path}`, {
+    const res = await fetch(`${apiBase}${path}`, {
       credentials: "include",
       headers,
       ...options,
@@ -99,7 +104,12 @@ export default api;
 ====================== */
 export async function checkBackendHealth(): Promise<boolean> {
   try {
-    const response = await fetch(`${API_BASE}/health/`, {
+    // Always use /api proxy in browser for HTTPS
+    const apiBase = typeof window !== 'undefined' && window.location.protocol === 'https:' 
+      ? '/api' 
+      : getApiUrl();
+      
+    const response = await fetch(`${apiBase}/health/`, {
       method: 'GET',
       credentials: 'include',
     });

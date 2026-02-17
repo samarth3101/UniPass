@@ -47,8 +47,10 @@ export default function FeedbackPage() {
 
   const checkEligibility = async () => {
     try {
+      // Use /api proxy for HTTPS compatibility
+      const apiBase = typeof window !== 'undefined' && window.location.protocol === 'https:' ? '/api' : 'http://localhost:8000';
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/feedback/check-eligibility/${eventId}/${studentPrn}`
+        `${apiBase}/feedback/check-eligibility/${eventId}/${studentPrn}`
       );
 
       if (!response.ok) {
@@ -107,8 +109,10 @@ export default function FeedbackPage() {
     setError(null);
 
     try {
+      // Use /api proxy for HTTPS compatibility
+      const apiBase = typeof window !== 'undefined' && window.location.protocol === 'https:' ? '/api' : 'http://localhost:8000';
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/feedback/submit`,
+        `${apiBase}/feedback/submit`,
         {
           method: "POST",
           headers: {

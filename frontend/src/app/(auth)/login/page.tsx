@@ -21,10 +21,11 @@ export default function LoginPage() {
       const res = await login(email, password);
       // Store both token and user info
       setAuth(res.access_token, res.user);
-      router.replace("/dashboard");
-    } catch {
+      // Wait a tick for localStorage to save, then force page reload to dashboard
+      await new Promise(resolve => setTimeout(resolve, 100));
+      window.location.replace("/dashboard");
+    } catch (err) {
       setError("Invalid email or password");
-    } finally {
       setLoading(false);
     }
   };

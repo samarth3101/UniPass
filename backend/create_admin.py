@@ -8,7 +8,8 @@ from app.db.database import engine, SessionLocal
 from app.models.user import User, UserRole
 from passlib.context import CryptContext
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Use same password context as auth.py
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 db = SessionLocal()
 
@@ -17,14 +18,15 @@ admin = db.query(User).filter(User.email == "admin@test.com").first()
 
 if admin:
     # Update password
-    admin.hashed_password = pwd_context.hash("admin123")
+    admin.password_hash = pwd_context.hash("admin123")
     db.commit()
     print("✅ Updated admin@test.com password to: admin123")
 else:
     # Create admin
     admin = User(
         email="admin@test.com",
-        hashed_password=pwd_context.hash("admin123"),
+        full_name="Admin User",
+        password_hash=pwd_context.hash("admin123"),
         role=UserRole.ADMIN
     )
     db.add(admin)

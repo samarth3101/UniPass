@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/services/api";
+import { setAuth } from "@/lib/auth";
 import "./scanner-login.scss";
 
 export default function ScannerLoginPage() {
@@ -22,9 +23,9 @@ export default function ScannerLoginPage() {
     try {
       if (mode === "login") {
         const data = await api.post("/auth/login/", { email, password });
-        localStorage.setItem("unipass_token", data.access_token);
-        localStorage.setItem("unipass_user", JSON.stringify(data.user));
-        router.push("/scanner-scan");
+        setAuth(data.access_token, data.user);
+        await new Promise(resolve => setTimeout(resolve, 100));
+        window.location.replace("/scanner-scan");
       } else {
         const data = await api.post("/auth/signup/", { 
           email, 
@@ -32,13 +33,12 @@ export default function ScannerLoginPage() {
           full_name: fullName,
           role: "SCANNER"
         });
-        localStorage.setItem("unipass_token", data.access_token);
-        localStorage.setItem("unipass_user", JSON.stringify(data.user));
-        router.push("/scanner-scan");
+        setAuth(data.access_token, data.user);
+        await new Promise(resolve => setTimeout(resolve, 100));
+        window.location.replace("/scanner-scan");
       }
     } catch (err: any) {
       setError(err.message || (mode === "login" ? "Login failed" : "Signup failed"));
-    } finally {
       setLoading(false);
     }
   }

@@ -39,7 +39,9 @@ export default function SignupPage() {
       const data = await res.json();
       // Auto-login after signup
       setAuth(data.access_token, data.user);
-      router.replace("/dashboard");
+      // Wait a tick for localStorage to save, then force page reload to dashboard
+      await new Promise(resolve => setTimeout(resolve, 100));
+      window.location.replace("/dashboard");
     } catch (err: any) {
       setError(err.message);
     } finally {

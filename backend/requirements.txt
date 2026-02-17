@@ -23,8 +23,13 @@ qrcode==8.2
 pillow==10.4.0
 openpyxl==3.1.5
 reportlab==4.4.9
+<<<<<<< HEAD
 python-multipart==0.0.9
 sse-starlette==2.3.6
+=======
+python-multipart==0.0.22
+sse-starlette==2.3.0
+>>>>>>> parent of e3c585c (fix: update sse-starlette to 2.3.6 for deployment)
 slowapi==0.1.9
 pandas>=2.2.1
 numpy>=1.26.4
