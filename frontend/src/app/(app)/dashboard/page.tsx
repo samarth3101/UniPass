@@ -50,8 +50,13 @@ export default function DashboardPage() {
   useEffect(() => {
     async function loadDashboardData() {
       try {
-        const response: { total: number; skip: number; limit: number; events: Event[] } = await api.get("/events/");
-        const eventsData = response.events || [];
+        // Fetch events and bulk attendance summary in parallel
+        const [eventsResponse, bulkSummary] = await Promise.all([
+          api.get("/events/") as Promise<{ total: number; skip: number; limit: number; events: Event[] }>,
+          api.get("/attendance/summary/bulk") as Promise<Record<number, Summary>>
+        ]);
+        
+        const eventsData = eventsResponse.events || [];
         setEvents(eventsData);
 
         // Calculate comprehensive stats
@@ -63,14 +68,12 @@ export default function DashboardPage() {
         let upcomingCount = 0;
         let todayCount = 0;
 
-        // Fetch stats for each event
+        // Use bulk summary data instead of individual API calls
         for (const event of eventsData) {
-          try {
-            const summary: Summary = await api.get(`/attendance/event/${event.id}/summary`);
+          const summary = bulkSummary[event.id];
+          if (summary) {
             totalRegs += summary.total_registered || 0;
             totalAtt += summary.total_attended || 0;
-          } catch (err) {
-            // Event might not have data yet
           }
 
           const eventStart = new Date(event.start_time);

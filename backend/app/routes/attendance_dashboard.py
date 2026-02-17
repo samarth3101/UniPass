@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from typing import List
+from typing import List, Dict
 from datetime import datetime
 
 from app.db.database import get_db
@@ -69,6 +69,57 @@ def get_attendance_summary(
         "total_attended": total_attended,
         "total_present": total_attended  # Backward compatibility
     }
+
+
+# ==============================
+# API 2.5: Bulk Attendance Summary (OPTIMIZED FOR DASHBOARD)
+# ==============================
+@router.get(
+    "/summary/bulk",
+    response_model=Dict[int, AttendanceSummary]
+)
+def get_bulk_attendance_summary(
+    db: Session = Depends(get_db)
+):
+    """
+    Get attendance summary for ALL events in a single query.
+    This is optimized for dashboard loading to avoid N+1 query problem.
+    
+    Returns:
+        Dictionary mapping event_id to attendance summary
+    """
+    # Get all registrations grouped by event
+    registrations = db.query(
+        Ticket.event_id,
+        func.count(Ticket.id).label('total_registered')
+    ).group_by(Ticket.event_id).all()
+    
+    # Get all attendance grouped by event
+    attendance = db.query(
+        Attendance.event_id,
+        func.count(func.distinct(Attendance.student_prn)).label('total_attended')
+    ).group_by(Attendance.event_id).all()
+    
+    # Build lookup dictionaries
+    reg_dict = {r.event_id: r.total_registered for r in registrations}
+    att_dict = {a.event_id: a.total_attended for a in attendance}
+    
+    # Get all event IDs
+    all_event_ids = set(reg_dict.keys()) | set(att_dict.keys())
+    
+    # Build response
+    result = {}
+    for event_id in all_event_ids:
+        total_reg = reg_dict.get(event_id, 0)
+        total_att = att_dict.get(event_id, 0)
+        result[event_id] = {
+            "event_id": event_id,
+            "total_registered": total_reg,
+            "total_attended": total_att,
+            "total_present": total_att  # Backward compatibility
+        }
+    
+    return result
 
 
 # ==============================
