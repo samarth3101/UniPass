@@ -12,8 +12,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  // Enable standalone output for optimal deployment
-  output: 'standalone',
 };
 
 export default nextConfig;
