@@ -369,7 +369,7 @@ export default function OrganizerModal({ organizerId, onClose, onUpdate }: Organ
                 <button 
                   onClick={handleDelete} 
                   className="confirm-delete-btn" 
-                  disabled={deleting || (data && data.statistics.total_events > 0)}
+                  disabled={deleting || !!(data && data.statistics.total_events > 0)}
                 >
                   {deleting ? "Deleting..." : "Delete"}
                 </button>

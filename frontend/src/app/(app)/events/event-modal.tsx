@@ -340,27 +340,6 @@ export default function EventModal({ event, onClose }: Props) {
     }
   }
 
-  async function sendFeedbackRequests() {
-    if (!confirm(`Send feedback request emails to all attended students?`)) {
-      return;
-    }
-
-    setSendingFeedback(true);
-    try {
-      const result = await api.post(`/feedback/send-requests/${event.id}`);
-      
-      const message = `Feedback requests sent! ` +
-                     `Emails sent: ${result.emails_sent}, Failed: ${result.emails_failed}` +
-                     (result.already_submitted > 0 ? `, Already submitted: ${result.already_submitted}` : '');
-      toast.success(message);
-    } catch (error: any) {
-      console.error("Error sending feedback requests:", error);
-      toast.error(error.response?.data?.detail || "Failed to send feedback requests");
-    } finally {
-      setSendingFeedback(false);
-    }
-  }
-
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal large" onClick={(e) => e.stopPropagation()}>

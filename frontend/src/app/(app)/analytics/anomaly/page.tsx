@@ -823,7 +823,7 @@ export default function AnomalyDetectionPage() {
       )}
 
       {/* Help Guide */}
-      {helpContent && <HelpGuide content={helpContent} showToastOnMount={false} />}
+      {helpContent && <HelpGuide content={helpContent} />}
     </div>
   );
 }
