@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import api from "@/services/api";
 import StudentModal from "./student-modal";
 import { toast } from "@/components/Toast";
@@ -44,16 +44,44 @@ export default function AttendancePage() {
   const [authUsername, setAuthUsername] = useState("");
   const [authPassword, setAuthPassword] = useState("");
   const [authError, setAuthError] = useState("");
+  const [isFetching, setIsFetching] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
+    
     api.get("/events/").then((response) => {
-      setEvents(response.events || response);
+      if (isMounted) {
+        setEvents(response.events || response);
+      }
     });
 
     const params = new URLSearchParams(window.location.search);
     const id = params.get("event_id");
-    if (id) setEventId(Number(id));
+    if (id && isMounted) setEventId(Number(id));
+    
+    return () => {
+      isMounted = false;
+    };
   }, []);
+
+  const fetchData = useCallback(async () => {
+    if (!eventId || isFetching) return;
+    
+    setIsFetching(true);
+    try {
+      const [registered, attended, summaryData] = await Promise.all([
+        api.get(`/attendance/event/${eventId}/registered`),
+        api.get(`/attendance/event/${eventId}/attended`),
+        api.get(`/attendance/event/${eventId}/summary`)
+      ]);
+
+      setRegisteredStudents(registered.students);
+      setAttendedStudents(attended.students);
+      setSummary(summaryData);
+    } finally {
+      setIsFetching(false);
+    }
+  }, [eventId, isFetching]);
 
   useEffect(() => {
     if (!eventId) return;
@@ -61,19 +89,7 @@ export default function AttendancePage() {
     fetchData();
     const interval = setInterval(fetchData, 4000); // auto refresh
     return () => clearInterval(interval);
-  }, [eventId]);
-
-  async function fetchData() {
-    const [registered, attended, summaryData] = await Promise.all([
-      api.get(`/attendance/event/${eventId}/registered`),
-      api.get(`/attendance/event/${eventId}/attended`),
-      api.get(`/attendance/event/${eventId}/summary`)
-    ]);
-
-    setRegisteredStudents(registered.students);
-    setAttendedStudents(attended.students);
-    setSummary(summaryData);
-  }
+  }, [eventId, fetchData]);
 
   function handleOverrideToggle() {
     if (overrideMode) {
